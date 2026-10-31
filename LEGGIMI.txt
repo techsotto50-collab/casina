@@ -1,0 +1,12 @@
+CONFIGURAZIONE RAPIDA GOOGLE - VERSIONE SENZA MENU
+
+1. Apri script.google.com con l'account che possiede il calendario e l'elenco Kindle.
+2. Crea un progetto Apps Script e incolla il file Code-senza-menu.gs contenuto nel kit completo.
+3. Esegui la funzione configuraKindle e autorizza lo script.
+4. Pubblica come Applicazione web, con esecuzione a tuo nome e accesso consentito a Chiunque.
+5. Copia l'indirizzo che termina con /exec nel file config.js del sito.
+6. Apri il pannello, entra in Impostazioni e inserisci il codice personale di 20 caratteri.
+
+Non inserire il codice personale in config.js e non pubblicare Code-senza-menu.gs insieme al sito.
+Questa versione non richiede né deve contenere collegamenti a Fogli Google per il menù.
+Le istruzioni complete sono nella Guida-Kindle-dashboard.pdf del kit.

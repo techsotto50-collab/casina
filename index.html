@@ -1,0 +1,935 @@
+<!doctype html>
+<html lang="it"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1"><meta name="referrer" content="no-referrer"><title>Pannello Kindle</title>
+<style id="layout-base">
+*{box-sizing:border-box}
+body{font-family:Arial,sans-serif;background:#fff;color:#111;margin:0;padding:0}
+.page{display:block;width:100%;margin:0 auto;padding:12px}
+table{width:100%;border-collapse:collapse;table-layout:fixed}
+td{padding:0;vertical-align:middle}
+h1{font-size:25px;line-height:1.1;margin:0;font-weight:bold}
+.place{font-size:13px;line-height:1.3;margin-top:3px;letter-spacing:1px}
+.date{text-align:right;font-size:14px;line-height:1.4;width:34%}
+.current{border-top:3px solid #111;margin-top:10px}
+.temperature{width:52%;font-size:72px;font-weight:bold;line-height:1.1;padding:7px 0;white-space:nowrap;letter-spacing:-3px}
+.weather-icon{display:inline-block;width:76px;height:76px;vertical-align:middle;margin-left:14px}
+.condition{font-size:23px;font-weight:bold;line-height:1.15}
+.range{font-size:18px;margin-top:9px;line-height:1.3}
+.label{font-size:13px;font-weight:normal;text-transform:uppercase;letter-spacing:.5px}
+.stats{border-top:1px solid #111;border-bottom:3px solid #111;text-align:center}
+.stats td{padding:8px 4px;width:33.333%}
+.stats td+td{border-left:1px solid #999}
+.stat-icon{width:20px;height:20px;vertical-align:middle;margin-right:5px}
+#view-meteo .meteo-hero{padding:9px 0 10px}
+#view-meteo .meteo-summary{height:100%}
+#view-meteo .meteo-now{width:55%;font-size:112px;line-height:1.05;font-weight:bold;letter-spacing:-5px;white-space:nowrap;text-align:left}
+#view-meteo .meteo-now .weather-icon{display:inline-block;width:108px;height:108px;margin-left:10px;vertical-align:middle}
+#view-meteo .meteo-details{width:45%;padding-left:12px;text-align:left}
+#view-meteo .condition{font-size:38px;line-height:1.05;text-align:left;margin:0;word-wrap:break-word}
+#view-meteo .hero-range{display:block;font-size:27px;line-height:1.25;font-weight:normal;text-align:left;margin-top:9px;white-space:nowrap}
+.forecast-symbol{width:80px;height:80px;vertical-align:middle;margin:8px 0}
+.weather-primary,.weather-secondary{overflow:hidden}
+#view-meteo .stats{border-bottom:6px solid #111}
+#view-meteo .stats td{padding:8px 3px}
+#view-meteo .stats .label{font-size:18px;font-weight:bold;letter-spacing:0;line-height:1.2;white-space:nowrap}
+#view-meteo .stat-icon{display:block;width:40px;height:40px;margin:0 auto 5px}
+#view-meteo .stats .value{font-size:32px;line-height:1.1}
+#view-meteo .stats .unit{font-size:22px}
+.value{font-size:22px;line-height:1.15;margin-top:4px;font-weight:bold;white-space:nowrap}
+.unit{font-size:15px;font-weight:normal}
+h2{font-size:13px;letter-spacing:1px;margin:10px 0 7px}
+.forecast{text-align:center}
+.forecast td{width:33.333%;vertical-align:top;padding:0 6px}
+.forecast td+td{border-left:1px solid #999}
+.day{font-size:28px;font-weight:bold;line-height:1.2}
+.day-date{display:block;font-size:24px;font-weight:bold;margin-top:3px}
+.forecast-range{font-size:30px;font-weight:bold;margin:6px 0;white-space:nowrap}
+.forecast-desc{font-size:24px;line-height:1.2;min-height:58px}
+.rain{font-size:20px;margin-top:8px;line-height:1.2;white-space:nowrap}
+.rain-icon{width:24px;height:24px;vertical-align:middle;margin-right:4px}
+.weather-footer{border-top:3px solid #111;margin-top:14px;padding:14px 0}
+.footer{margin:0}
+.footer td:first-child{width:40%}
+.button{font-family:Arial,sans-serif;font-size:16px;font-weight:bold;background:#fff;color:#111;border:2px solid #111;padding:9px 12px;cursor:pointer}
+.note{text-align:right;font-size:12px;line-height:1.4}
+.status{font-size:12px;line-height:1.3;margin-top:7px;min-height:16px}
+.status:empty{display:none}
+@media(max-width:400px){.page{padding:8px}h1{font-size:21px}.date{font-size:12px}.temperature{font-size:65px;width:60%}.weather-icon{width:64px;height:64px;margin-left:7px}.condition{font-size:20px}.value{font-size:19px}.forecast td{padding:0 3px}.forecast-range{font-size:16px}.forecast-desc{font-size:12px}.button{font-size:14px;padding:9px 7px}}
+
+.view[hidden]{display:none!important}
+.small{font-size:13px;line-height:1.4}
+.section-title{border-top:2px solid #111;padding-top:10px;margin-top:12px}
+.clock{font-size:88px;line-height:1.05;font-weight:bold;text-align:center;margin:12px 0 2px;letter-spacing:-3px}
+.today-date{text-align:center;font-size:22px;margin-bottom:10px}
+.today-weather{border:0;margin:5px 0;table-layout:fixed}
+.today-weather td{padding:7px 0}
+.today-weather td:first-child{width:52%;font-size:72px;font-weight:bold;white-space:nowrap;letter-spacing:-2px;text-align:left}
+.today-weather td:last-child{text-align:left;padding-left:12px;word-wrap:break-word}
+.today-weather .weather-icon{width:80px;height:80px;margin-left:10px}
+#today-desc{display:block;font-size:32px;line-height:1.1;text-align:left}
+#today-range{display:block;font-size:22px;line-height:1.3;text-align:left;margin:5px 0 0}
+.today-place{border-top:2px solid #111;padding-top:10px;margin-top:10px;font-size:13px;letter-spacing:1px;text-align:left}
+.today-band{border-top:1px solid #aaa;border-bottom:2px solid #111}
+.today-band td{width:50%;padding:9px 4px;font-size:24px;white-space:nowrap}
+.today-band td+td{border-left:1px solid #aaa}
+.today-band img{display:inline-block;width:40px;height:40px;min-width:40px;max-width:none;vertical-align:middle;margin-right:8px}
+#view-today .section-title{border-top:0}
+.clock{margin-top:0}
+.event-row,.task-row{padding:9px 0;border-bottom:1px solid #bbb;font-size:19px;line-height:1.25;overflow-wrap:break-word;word-wrap:break-word}
+.event-time{font-size:14px;margin-bottom:4px;font-weight:bold}
+.event-location,.task-due{font-size:13px;margin-top:3px}
+.event-button{display:block;width:100%;text-align:left;font-family:Arial,sans-serif;background:#fff;color:#111;border:0;border-bottom:1px solid #bbb;cursor:pointer;min-height:44px}
+.event-button span{display:block}
+.detail-title{font-size:27px;line-height:1.2;font-weight:bold;margin:12px 0 10px;word-wrap:break-word}
+.detail-meta{font-size:16px;line-height:1.4;margin:6px 0;word-wrap:break-word}
+.detail-description{font-size:18px;line-height:1.4;white-space:pre-wrap;word-wrap:break-word;border-top:2px solid #111;margin-top:12px;padding:12px 0}
+.task-box{display:inline-block;width:14px;height:14px;border:2px solid #111;vertical-align:baseline;margin-right:9px}
+.task-layout{table-layout:fixed}
+.task-layout .task-check-cell{width:50px;padding-right:6px}
+.task-check{display:block;width:44px;height:44px;padding:0;border:2px solid #111;background:#fff;color:#111;font-family:Arial,sans-serif;font-size:26px;line-height:1}
+.task-check:disabled{border-color:#aaa;color:#777}
+.task-open{display:block;width:100%;min-height:44px;text-align:left;font-family:Arial,sans-serif;background:#fff;color:#111;border:0;padding:0;font-size:19px;line-height:1.3;word-wrap:break-word}
+.task-open span{display:block}
+.task-open .task-due{font-size:13px}
+.task-has-notes{font-size:12px;margin-top:3px}
+.task-feedback{font-size:14px;line-height:1.4;margin-top:6px}
+.task-feedback:empty{display:none}
+#today-event{padding:0}
+#today-dates{position:relative;border-top:1px solid #111;margin-top:5px}
+#today-event .event-row{font-size:22px;padding:7px 0}
+#today-event .event-time{font-size:14px;margin-top:3px;margin-bottom:0;font-weight:normal;padding-right:76px}
+#today-event .compact-title{font-weight:bold;padding-right:18px;position:relative}
+#today-event .event-arrow{position:absolute;right:0;top:0;font-weight:normal}
+#today-event .compact-title,#today-tasks .task-label{overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+#today-tasks .task-row{padding:5px 0}
+#today-tasks .task-open{font-size:17px}
+#today-tasks .task-has-notes{display:none}
+.today-count{position:absolute;right:0;bottom:8px;text-align:right;font-family:Arial,sans-serif;font-size:12px;line-height:1.2;font-weight:normal;letter-spacing:0;border:0;background:#fff;color:#111;padding:0;text-decoration:underline}
+.empty{font-size:17px;line-height:1.4;padding:12px 0}
+.pager{margin-top:12px}
+.pager td{text-align:center}
+.pager td:first-child{text-align:left}.pager td:last-child{text-align:right}
+.pager button,.small-button{font-family:Arial,sans-serif;font-size:14px;background:#fff;color:#111;border:1px solid #111;padding:8px 10px;min-height:36px}
+.pager button:disabled{color:#777;border-color:#aaa}
+.setup-status{font-size:15px;line-height:1.4;border-bottom:1px solid #aaa;padding:10px 0;margin-bottom:10px}
+.setup-links{font-size:14px;line-height:1.5;margin-top:10px;word-wrap:break-word}
+.setup-label{display:block;font-size:16px;line-height:1.4;margin-top:12px}
+.setup-input{display:block;width:100%;border:1px solid #111;padding:9px;font-family:Arial,sans-serif;font-size:16px;margin-top:5px;background:#fff;color:#111}
+.setup-actions{margin-top:14px}.setup-actions button{margin-right:8px;margin-bottom:8px}
+.remember-label{display:block;font-size:15px;line-height:1.4;margin-top:12px}
+.remember-label input{width:18px;height:18px;vertical-align:middle;margin-right:7px}
+.bookmark-hint{display:none;font-size:14px;line-height:1.4;border-top:1px solid #111;margin-top:12px;padding-top:8px}
+.menu-caption{font-size:18px;line-height:1.3;margin:0 0 5px}
+.menu-week{font-size:26px;line-height:1.2;font-weight:bold;text-align:center;margin:8px 0 12px}
+.menu-controls{margin:0 0 14px}
+.menu-controls td{width:36%;padding:0 4px}
+.menu-controls td:first-child{padding-left:0}.menu-controls td:last-child{padding-right:0}
+.menu-controls td:nth-child(2){width:28%}
+.menu-controls button{display:block;width:100%;min-height:54px;border:2px solid #111;background:#fff;color:#111;font-family:Arial,sans-serif;font-size:23px;line-height:1.1;font-weight:bold;padding:8px 4px;border-radius:0}
+.menu-controls .menu-current{font-size:16px}
+.menu-controls button:disabled{color:#777;border-color:#aaa}
+.menu-table{margin-top:10px;border-top:2px solid #111}
+.menu-table td{border-bottom:1px solid #aaa;vertical-align:middle}
+.menu-day{width:16%;font-size:23px;font-weight:bold;padding:8px;border-right:1px solid #111}
+.menu-day small{display:block;font-size:19px;font-weight:bold;margin-top:4px}
+.menu-is-today .menu-day{border-left:4px solid #111;background:#eee}
+.menu-today-tag{display:block;font-size:11px;margin-top:4px}
+.menu-row{display:block;width:100%;font-family:Arial,sans-serif;text-align:left;background:#fff;color:#111;border:0;padding:9px 12px;min-height:82px;cursor:pointer}
+.menu-row span{display:block;white-space:normal;word-wrap:break-word;font-size:21px;line-height:1.25}
+.menu-row .menu-first{font-size:24px;font-weight:bold}
+.menu-row .menu-side{font-size:19px}
+.menu-row:disabled{cursor:default}
+#menu-list{padding:0}
+.menu-note{font-size:12px;line-height:1.4;margin-top:9px}
+.menu-footer{margin-top:8px}
+.menu-footer td:first-child{width:35%;padding-right:8px}
+.menu-footer .menu-note{font-size:13px;margin:0;text-align:center}
+.menu-footer button{font-weight:bold;font-size:14px;padding:7px 8px}
+.menu-course{border-bottom:1px solid #aaa;padding:12px 0;font-size:21px;line-height:1.3;word-wrap:break-word}
+.menu-course small{display:block;font-size:13px;font-weight:bold;margin-bottom:4px;text-transform:uppercase}
+.weather-alert{display:block;width:100%;font-family:Arial,sans-serif;text-align:left;background:#fff;color:#111;border:3px solid #111;padding:7px 9px;margin:8px 0;font-size:17px;line-height:1.2}
+.weather-alert span{display:block;font-size:12px;margin-top:3px}
+.alert-symbol{width:42px}.alert-symbol img{width:32px;height:32px}
+.alert-more{width:15px;font-size:24px;text-align:right}
+.alert-unavailable{font-size:13px;border-width:1px;padding:5px 8px}
+.route-row{display:block;width:100%;font-family:Arial,sans-serif;border:0;border-bottom:1px solid #aaa;background:#fff;color:#111;padding:6px 0;text-align:left;min-height:44px}
+.route-symbol{width:50px}.route-symbol img{display:block;width:40px;height:40px}
+.route-label{font-size:17px;font-weight:bold;width:41%}
+.route-time{font-size:23px;font-weight:bold;text-align:right;white-space:nowrap;width:26%}
+.route-extra{display:block;font-size:12px;font-weight:normal;line-height:1.2;text-align:right}
+.route-more{width:16px;text-align:right;font-size:24px}
+.traffic-caption{font-size:11px;line-height:1.25;margin:5px 0;text-align:center}
+.task-notice{display:block;width:100%;font-family:Arial,sans-serif;font-size:18px;font-weight:bold;background:#fff;color:#111;border:0;border-top:1px solid #111;padding:10px 0;text-align:left;margin-top:6px;min-height:44px}
+.task-notice span{float:right;font-size:24px;line-height:1}
+.setup-panel[hidden]{display:none!important}
+.settings-tabs{margin:12px 0 16px}
+.settings-tabs td{padding:0 3px}
+.settings-tabs td:first-child{padding-left:0}.settings-tabs td:last-child{padding-right:0}
+.settings-tabs button{display:block;width:100%;min-height:44px;border:2px solid #111;background:#fff;color:#111;font-family:Arial,sans-serif;font-size:17px;font-weight:bold;padding:8px 3px;border-radius:0}
+.settings-tabs button[aria-pressed="true"]{background:#111;color:#fff}
+#view-setup h1{font-size:27px}
+#view-setup h2{font-size:18px;letter-spacing:.5px;margin:12px 0 8px}
+#view-setup .small,#view-setup .setup-links{font-size:18px;line-height:1.4}
+#view-setup .setup-status{font-size:18px;padding:9px 0;margin:0}
+#view-setup .setup-label{font-size:19px;margin-top:12px}
+#view-setup .setup-input{font-size:20px;padding:10px;min-height:46px}
+#view-setup .remember-label{font-size:18px;line-height:1.4;margin-top:14px}
+#view-setup .remember-label input{width:22px;height:22px}
+#view-setup .button,#view-setup .small-button{font-size:18px;min-height:46px;padding:10px 12px}
+#view-setup .bookmark-hint{font-size:18px;line-height:1.4}
+#view-setup .setup-links a{display:block;padding:8px 0}
+</style>
+<style id="layout-fit"></style><style>
+html,body{margin:0;padding:0;width:100%;height:100%;overflow:hidden}
+#app-shell{position:absolute;top:0;left:0;width:100%;height:100%;overflow:hidden}
+#eink-cleaner{display:none;position:fixed;z-index:99999;top:0;right:0;bottom:0;left:0;width:100%;height:100%;background:#000}
+#content-viewport{position:absolute;top:0;left:0;bottom:58px;width:100%;overflow:hidden}
+.today-task-dock{position:absolute;left:0;bottom:58px;width:100%;background:#fff;padding:6px 12px;box-sizing:border-box;z-index:9}
+.today-task-dock .task-notice{margin:0;min-height:48px;padding:10px;border:1px solid #111;font-size:20px;line-height:1.25;white-space:normal;word-wrap:break-word}
+.today-task-dock .task-notice span{font-size:24px}
+.list-controls[hidden]{display:none!important}
+
+.bottom-nav{position:absolute;bottom:0;min-height:58px;left:0;width:100%;background:#fff;border-top:2px solid #111;padding:5px 8px 7px;box-sizing:border-box;z-index:10}
+.bottom-nav table{width:100%;table-layout:fixed;border-collapse:collapse}
+.bottom-nav td{padding:0 3px}
+.bottom-nav button{display:block;width:100%;height:44px;border:2px solid #111;border-radius:0;background:#fff;color:#111;font-family:Arial,sans-serif;font-size:13px;font-weight:bold;padding:0 2px}
+.bottom-nav button[aria-current="page"]{background:#111;color:#fff}
+.bottom-nav .settings-cell{width:50px}
+.bottom-nav .settings-button{width:44px;height:44px;padding:0}
+.settings-button img{width:23px;height:23px;vertical-align:middle}
+.settings-button .settings-icon-active{display:none}
+.settings-button[aria-current="page"] .settings-icon{display:none}
+.settings-button[aria-current="page"] .settings-icon-active{display:inline-block}
+@media(max-width:400px){.bottom-nav{padding-left:3px;padding-right:3px}.bottom-nav td{padding:0 2px}.bottom-nav button{font-size:11px;padding:0 1px}.bottom-nav .settings-cell{width:48px}}
+.list-controls{position:absolute;bottom:58px;left:0;width:100%;background:#fff;border-top:1px solid #111;padding:8px 12px;box-sizing:border-box;z-index:9}
+.list-controls .pager{margin:0 0 6px}
+.list-controls .pager button,.list-controls>.small-button{font-size:14px;padding:8px 10px;min-height:36px}
+.list-controls .small{font-size:12px;line-height:1.3;margin:0 0 6px}
+.footer .refresh-button,.menu-footer .refresh-button,.list-controls .refresh-button,.refresh-button{font-family:Arial,sans-serif;font-size:14px;font-weight:bold;line-height:1.2;background:#fff;color:#111;border:1px solid #111;border-radius:0;padding:8px 10px;min-height:36px;width:160px;max-width:100%;cursor:pointer}
+</style>
+</head><body>
+<div id="app-shell">
+<div id="content-viewport">
+<main class="page" id="page">
+<section class="view" id="view-today">
+<div class="clock" id="clock">--:--</div><div class="today-date" id="today-date">--</div>
+<button class="weather-alert" id="today-alert" onclick="openAlerts()" style="display:none"></button>
+<div class="today-place" id="today-place">LA TUA CITTÀ</div>
+<table class="today-weather" aria-label="Meteo sintetico"><tr><td><span id="today-temp">--°</span><img class="weather-icon" id="today-icon" src="icons/cloud-sun.svg" alt=""></td><td><b id="today-desc">Caricamento meteo…</b><span id="today-range">-- / --</span></td></tr></table>
+<table class="today-band" aria-label="Vento e probabilità di pioggia"><tr><td><img src="icons/today-wind.svg" width="40" height="40" alt="Vento"><span id="today-wind">-- km/h</span></td><td><img src="icons/today-droplet.svg" width="40" height="40" alt="Probabilità di pioggia"><span id="today-rain">--%</span></td></tr></table>
+<div id="today-routes"></div><div class="traffic-caption" id="traffic-status"></div>
+<div id="today-dates" style="display:none"><div id="today-event"></div><button class="today-count" id="today-events-count" onclick="showView('agenda')" style="display:none" aria-label="Vedi tutte le date"></button></div>
+<div class="task-feedback" id="today-task-status" role="status" aria-live="polite" style="display:none"></div>
+</section>
+<section class="view" id="view-meteo" hidden>
+<table id="weather-heading" aria-label="Località e aggiornamento"><tr>
+<td><h1 id="weather-city">LA TUA CITTÀ</h1><div class="place" id="weather-area"></div></td>
+<td class="date" id="date">Caricamento<br>meteo…</td>
+</tr></table>
+<div class="weather-primary" id="weather-primary">
+<div class="current meteo-hero" aria-label="Meteo attuale">
+<table class="meteo-summary"><tr>
+<td class="meteo-now"><span id="temp">--&deg;</span><img class="weather-icon" id="weather-icon" src="icons/cloud-sun.svg" alt="" aria-hidden="true"></td>
+<td class="meteo-details"><div class="condition" id="desc">Attendo i dati</div><span class="hero-range" aria-label="Temperature minima e massima">Min <span id="range-min">--°</span> · max <span id="range-max">--°</span></span></td>
+</tr></table>
+</div>
+<table class="stats" aria-label="Dati di oggi"><tr>
+<td><img class="stat-icon" src="icons/stat-droplet.svg" alt="" aria-hidden="true"><span class="label">Umidità</span><span class="value" id="humidity">--</span></td>
+<td><img class="stat-icon" src="icons/stat-wind.svg" alt="" aria-hidden="true"><span class="label">Vento</span><span class="value" id="wind">--</span></td>
+<td><img class="stat-icon" src="icons/stat-rain.svg" alt="" aria-hidden="true"><span class="label">Prob. pioggia</span><span class="value" id="rain-today">--</span></td>
+</tr></table>
+</div>
+<div class="weather-secondary" id="weather-secondary">
+<table class="forecast" aria-label="Previsioni"><tbody><tr id="forecast"><td>--</td><td>--</td><td>--</td></tr></tbody></table>
+</div>
+<div class="weather-footer" id="weather-footer"><table class="footer"><tr><td><button class="button refresh-button" onclick="refreshAll()">AGGIORNA</button></td><td class="note">Aggiornamento ogni ora<br>Dati: Open-Meteo.com</td></tr></table></div>
+<div class="status" id="status" role="status" aria-live="polite">Connessione in corso…</div>
+
+</section>
+<section class="view" id="view-menu" hidden>
+<div class="menu-caption" id="menu-title">Menù trimestrale</div>
+<div class="menu-week" id="menu-week">--</div>
+<table class="menu-controls" aria-label="Scegli la settimana"><tr><td><button id="menu-prev" onclick="changeMenuWeek(-1)">‹ PRIMA</button></td><td><button class="menu-current" onclick="currentMenuWeek()">QUESTA<br>SETTIMANA</button></td><td><button id="menu-next" onclick="changeMenuWeek(1)">DOPO ›</button></td></tr></table>
+<div id="menu-list" class="empty">Collega Google per leggere il menù della scuola.</div>
+<table class="menu-footer"><tr><td><button class="small-button refresh-button" onclick="loadGoogle(false)">AGGIORNA MENÙ</button></td><td><div class="menu-note" id="menu-note">Tocca un giorno per tutte le portate.</div></td></tr></table>
+</section>
+<section class="view" id="view-menu-detail" hidden>
+<button class="small-button" onclick="showView('menu')">TORNA AL MENÙ</button>
+<h1 class="detail-title" id="menu-detail-title"></h1>
+<div id="menu-detail-courses"></div>
+<div class="menu-note" id="menu-detail-note"></div>
+</section>
+<section class="view" id="view-agenda" hidden>
+<div class="place">CALENDARIO KINDLE · PROSSIMI GIORNI</div>
+<div id="agenda-list" class="empty">Calendario da collegare.</div>
+</section>
+<section class="view" id="view-tasks" hidden>
+<div class="place">ELENCO KINDLE · GOOGLE TASKS</div>
+<div id="tasks-list" class="empty">Elenco da collegare.</div>
+<div class="task-feedback" id="tasks-action-status" role="status" aria-live="polite"></div>
+</section>
+<section class="view" id="view-detail" hidden>
+<button class="small-button" id="detail-back" onclick="closeEventDetail()">TORNA ALL’AGENDA</button>
+<div class="detail-title" id="detail-title"></div>
+<div class="detail-meta" id="detail-time"></div>
+<div class="detail-meta" id="detail-location"></div>
+<h2 class="section-title">DESCRIZIONE</h2>
+<div class="detail-description" id="detail-description"></div>
+<table class="pager" id="detail-pager"><tr><td><button id="detail-prev" onclick="changeDetailPage(-1)">Indietro</button></td><td class="small" id="detail-count">--</td><td><button id="detail-next" onclick="changeDetailPage(1)">Avanti</button></td></tr></table>
+<div class="small" id="detail-update" role="status" aria-live="polite"></div>
+</section>
+<section class="view" id="view-task-detail" hidden>
+<button class="small-button" id="task-detail-back" onclick="closeTaskDetail()">TORNA A DA FARE</button>
+<div class="detail-title" id="task-detail-title"></div>
+<div class="detail-meta" id="task-detail-date"></div>
+<h2 class="section-title">DETTAGLI</h2>
+<div class="detail-description" id="task-detail-notes"></div>
+<table class="pager" id="task-detail-pager"><tr><td><button id="task-detail-prev" onclick="changeTaskDetailPage(-1)">Indietro</button></td><td class="small" id="task-detail-count">--</td><td><button id="task-detail-next" onclick="changeTaskDetailPage(1)">Avanti</button></td></tr></table>
+<button class="button" id="task-detail-complete" onclick="completeDetailTask()">SEGNA COME COMPLETATA</button>
+<div class="task-feedback" id="task-detail-status" role="status" aria-live="polite"></div>
+</section>
+<section class="view" id="view-info" hidden>
+<button class="small-button" onclick="showView('today')">TORNA A OGGI</button>
+<h1 class="detail-title" id="info-title"></h1><div class="detail-description" id="info-body"></div>
+<table class="pager" id="info-pager"><tr><td><button id="info-prev" onclick="changeInfoPage(-1)">Indietro</button></td><td class="small" id="info-count"></td><td><button id="info-next" onclick="changeInfoPage(1)">Avanti</button></td></tr></table>
+<a class="small-button" id="info-source" href="https://www.regione.toscana.it/allertameteo/">BOLLETTINO UFFICIALE</a>
+</section>
+<section class="view" id="view-setup" hidden>
+<h1>IMPOSTAZIONI</h1>
+<div class="setup-status" id="google-status" role="status" aria-live="polite">Non collegato</div>
+<div class="small" id="setup-google-source"></div>
+<table class="settings-tabs" aria-label="Sezioni impostazioni"><tr><td><button id="setup-tab-google" onclick="showSettingsSection('google')" aria-pressed="true">GOOGLE</button></td><td hidden style="display:none"><button id="setup-tab-menu" onclick="showSettingsSection('menu')" aria-pressed="false">MENÙ</button></td><td><button id="setup-tab-help" onclick="showSettingsSection('help')" aria-pressed="false">AIUTO</button></td></tr></table>
+<div class="setup-panel" id="setup-panel-google">
+<label class="setup-label" for="google-url">URL applicazione web Google</label><input class="setup-input" id="google-url" type="url" placeholder="https://script.google.com/macros/s/…/exec" autocomplete="off">
+<label class="setup-label" for="google-key">Codice di accesso</label><input class="setup-input" id="google-key" type="password" autocomplete="off" autocapitalize="none" spellcheck="false">
+<label class="remember-label"><input type="checkbox" id="remember-bookmark" checked>Ricorda con un segnalibro personale</label>
+<div class="small">Dopo il salvataggio, aggiungi questa pagina ai segnalibri del Kindle.</div>
+<div class="setup-actions"><button class="button" onclick="saveSettings()">SALVA E COLLEGA</button><button class="small-button" onclick="forgetSettings()">SCOLLEGA</button></div>
+<div id="setup-message" class="small" role="status" aria-live="polite"></div>
+<h2 class="section-title">AGGIORNAMENTI</h2>
+<div class="small">Aggiornamento generale: all’apertura, dalle 06:30 e poi ogni ora. Cambiando pagina, si aggiorna se i dati hanno più di 15 minuti. Un secondo tocco su Oggi forza l’aggiornamento. Pausa automatica 23:30–06:30.</div>
+<div class="setup-actions"><button class="small-button refresh-button" onclick="fullRefresh()">AGGIORNA TUTTO</button></div>
+<h2 class="section-title">TRAFFICO E ALLERTE</h2>
+<div class="small" id="extras-status" role="status" aria-live="polite">Aggiornamento manuale.</div>
+<div class="setup-actions"><button class="small-button refresh-button" onclick="loadExtras()">AGGIORNA TRAFFICO E ALLERTE</button></div>
+<div class="bookmark-hint" id="bookmark-hint" role="status">Menu del browser → <b>Aggiungi ai segnalibri</b>. <button class="small-button" onclick="dismissBookmarkHint()">FATTO</button></div>
+</div>
+<div class="setup-panel" id="setup-panel-menu" hidden>
+<h2>MENÙ SCUOLA</h2>
+<div class="small" id="setup-menu-status">In attesa del collegamento Google.</div>
+<div class="small">Questa versione non usa alcun Foglio Google per il menù.</div>
+</div>
+<div class="setup-panel" id="setup-panel-help" hidden>
+<h2>SEGNALIBRO PERSONALE</h2>
+<div class="small">Dopo Salva e collega, apri il menu del browser Kindle e scegli Aggiungi ai segnalibri. Usa quel segnalibro per ritrovare il collegamento anche dopo un riavvio.</div>
+<h2 class="section-title">SCHERMO E-INK</h2>
+<div class="small">Il pannello esegue una pulizia nero-bianco quando esci da Oggi e quando torni a Oggi. Fra le altre pagine la esegue dopo cinque cambi e comunque ogni 3 ore.</div>
+<div class="setup-actions"><button class="small-button refresh-button" onclick="cleanEinkScreen(true)">PULISCI SCHERMO</button></div>
+<h2 class="section-title">CONFIGURAZIONE</h2>
+<div class="setup-links"><a href="google/LEGGIMI.txt">Istruzioni di configurazione</a><div>Il codice Google aggiornato è nel file fornito insieme allo ZIP.</div></div>
+</div>
+</section>
+</main>
+</div>
+<div class="today-task-dock" id="today-tasks" style="display:none" aria-label="Attività da fare"></div>
+<div class="list-controls" id="agenda-controls" hidden style="display:none" aria-label="Comandi agenda">
+<table class="pager"><tr><td><button id="agenda-prev" onclick="changePage('agenda',-1)">Indietro</button></td><td class="small" id="agenda-count">--</td><td><button id="agenda-next" onclick="changePage('agenda',1)">Avanti</button></td></tr></table>
+<button class="small-button refresh-button" onclick="loadGoogle(false)">AGGIORNA AGENDA</button>
+</div>
+<div class="list-controls" id="tasks-controls" hidden style="display:none" aria-label="Comandi elenco">
+<table class="pager"><tr><td><button id="tasks-prev" onclick="changePage('tasks',-1)">Indietro</button></td><td class="small" id="tasks-count">--</td><td><button id="tasks-next" onclick="changePage('tasks',1)">Avanti</button></td></tr></table>
+<div class="small">Tocca il titolo per i dettagli; il quadrato per completare l’attività.</div>
+<button class="small-button refresh-button" onclick="loadGoogle(false)">AGGIORNA ELENCO</button>
+</div>
+<nav class="bottom-nav" id="bottom-nav" aria-label="Schermate"><table><tr>
+<td><button id="nav-today" onclick="showToday()" aria-current="page">OGGI</button></td>
+<td><button id="nav-meteo" onclick="showView('meteo')">METEO</button></td>
+<td hidden style="display:none"><button id="nav-menu" onclick="showView('menu')">MENÙ</button></td>
+<td><button id="nav-agenda" onclick="showView('agenda')">AGENDA</button></td>
+<td><button id="nav-tasks" onclick="showView('tasks')">DA FARE</button></td>
+<td class="settings-cell"><button id="nav-setup" class="settings-button" onclick="openSetup()" aria-label="Impostazioni" title="Impostazioni"><img class="settings-icon" src="icons/settings.svg" alt=""><img class="settings-icon-active" src="icons/settings-active.svg" alt=""></button></td>
+</tr></table></nav>
+</div>
+<div id="eink-cleaner" aria-hidden="true"></div>
+<div id="google-transport" aria-hidden="true"></div>
+<div id="task-write-transport" style="display:none" aria-hidden="true">
+<iframe id="task-write-frame" name="kindle-task-write" title="Salvataggio attività"></iframe>
+<form id="task-write-form" method="post" target="kindle-task-write">
+<input type="hidden" name="action" value="complete-task"><input type="hidden" name="key" id="write-task-key"><input type="hidden" name="origin" id="write-task-origin"><input type="hidden" name="taskId" id="write-task-id"><input type="hidden" name="opId" id="write-task-operation">
+</form></div>
+
+<script src="config.js?v=30"></script>
+<script>
+var locationConfig=window.KINDLE_LOCATION||{},routeLabels=window.KINDLE_ROUTE_LABELS||['Destinazione 1','Destinazione 2'];
+el('weather-city').innerHTML=esc(locationConfig.title||'LA TUA CITTÀ');
+el('weather-area').innerHTML=esc(locationConfig.subtitle||'');
+el('today-place').innerHTML=esc(locationConfig.label||locationConfig.title||'LA TUA CITTÀ');
+if(window.KINDLE_MENU_ENABLED===false)el('nav-menu').parentNode.style.display='none';
+var latitude=isFinite(Number(locationConfig.latitude))?Number(locationConfig.latitude):43.7696;
+var longitude=isFinite(Number(locationConfig.longitude))?Number(locationConfig.longitude):11.2558;
+var weatherTimezone=locationConfig.timezone||'Europe/Rome';
+var url='https://api.open-meteo.com/v1/forecast?latitude='+encodeURIComponent(latitude)+'&longitude='+encodeURIComponent(longitude)+'&current=temperature_2m,relative_humidity_2m,weather_code,wind_speed_10m&daily=temperature_2m_max,temperature_2m_min,weather_code,precipitation_probability_max&timezone='+encodeURIComponent(weatherTimezone)+'&forecast_days=4';
+function el(id){return document.getElementById(id)}
+function desc(n){if(n===0)return 'Sereno';if(n===1)return 'Poco nuvoloso';if(n===2)return 'Parz. nuvoloso';if(n===3)return 'Coperto';if(n===45||n===48)return 'Nebbia';if(n>=51&&n<=57)return 'Pioviggine';if(n>=61&&n<=67)return 'Pioggia';if(n>=71&&n<=77)return 'Neve';if(n>=80&&n<=82)return 'Rovesci';if(n===85||n===86)return 'Rovesci di neve';if(n>=95)return 'Temporale';return 'Variabile'}
+function iconName(n){if(n===0)return 'sun';if(n===1||n===2)return 'cloud-sun';if(n===3)return 'cloud';if(n===45||n===48)return 'cloud-fog';if(n>=51&&n<=57)return 'cloud-drizzle';if(n>=61&&n<=67)return 'cloud-rain';if((n>=71&&n<=77)||n===85||n===86)return 'cloud-snow';if(n>=80&&n<=82)return 'cloud-rain-wind';if(n>=95)return 'cloud-lightning';return 'cloud'}
+function fmt(n){return n===null||typeof n==='undefined'?'--':Math.round(n)+'\u00b0'}
+function percent(n){return n===null||typeof n==='undefined'?'--':n+'%'}
+var baseLayout=null,fitTimer=null;
+// One bounded screen: only the settings form may scroll internally.
+// Navigation is positioned inside this screen, independent of document scrolling.
+function positionBottomControls(height){
+var nav=el('bottom-nav'),navHeight=(nav&&nav.offsetHeight)||58,controls=null;
+for(var i=0;i<2;i++){var kind=i===0?'agenda':'tasks',bar=el(kind+'-controls'),visible=activeView===kind;bar.hidden=!visible;bar.style.display=visible?'block':'none';if(visible)controls=bar}
+var taskDock=el('today-tasks'),showTaskDock=activeView==='today'&&googleData&&googleData.tasks&&googleData.tasks.length;
+taskDock.style.display=showTaskDock?'block':'none';if(showTaskDock)controls=taskDock;
+if(nav){nav.style.top=Math.max(0,height-navHeight)+'px';nav.style.bottom='auto'}
+var controlsHeight=controls?(controls.offsetHeight||(controls===taskDock?60:108)):0;
+if(controls){controls.style.top=Math.max(0,height-navHeight-controlsHeight)+'px';controls.style.bottom='auto'}
+var shell=el('app-shell'),viewport=el('content-viewport');
+if(shell)shell.style.height=height+'px';
+if(viewport){viewport.style.height=Math.max(0,height-navHeight-controlsHeight-6)+'px';viewport.style.bottom='auto';viewport.style.overflowX='hidden';viewport.style.overflowY=activeView==='setup'?'auto':'hidden'}
+return navHeight+controlsHeight;
+}
+function stopPagePan(event){if(activeView!=='setup'&&event.preventDefault)event.preventDefault()}
+// Empty lists free room for a larger clock and weather overview.
+function todayOverviewLimit(){
+if(!googleData||!Array.isArray(googleData.events)||!Array.isArray(googleData.tasks))return 1;
+var now=utcNow(),hasEvents=false;for(var i=0;i<googleData.events.length;i++)if(googleData.events[i].endMs>now){hasEvents=true;break}
+var empty=(hasEvents?0:1)+(googleData.tasks.length?0:1);
+return empty===2?1.8:empty===1?1.35:1;
+}
+function todayOverviewCss(scale){
+function px(n){return Math.round(n*scale*100)/100+'px'}
+var band=Math.min(scale,1.15);
+return '#view-today .clock{font-size:'+px(88)+'}'+
+'#view-today .today-date{font-size:'+px(22)+'}'+
+'#view-today .today-place{padding-top:'+px(10)+';margin-top:'+px(10)+'}'+
+'#view-today .today-weather td{padding-top:'+px(7)+';padding-bottom:'+px(7)+'}'+
+'#view-today .today-weather td:first-child{font-size:'+px(72)+'}'+
+'#view-today .today-weather .weather-icon{width:'+px(80)+';height:'+px(80)+';margin-left:'+px(10)+'}'+
+'#view-today #today-range{font-size:'+px(22)+'}'+
+'#view-today #today-desc{font-size:'+px(32)+'}'+
+'#view-today .today-band td{font-size:'+(Math.round(24*band*100)/100)+'px;padding-top:'+px(9)+';padding-bottom:'+px(9)+'}'+
+'#view-today .today-band img{width:'+(40*band)+'px;height:'+(40*band)+'px}';
+}
+// Keep the clock at least as large as the growing temperature, then fill spare height with weather padding.
+function todayWeatherCss(scale,overviewScale){
+function px(n){return Math.round(n*scale*100)/100+'px'}
+return '#view-today #clock{font-size:'+Math.round(Math.max(88*(overviewScale||1),72*scale)*100)/100+'px}'+
+'#view-today .today-weather td{padding-top:'+px(7)+';padding-bottom:'+px(7)+'}'+
+'#view-today .today-weather td:first-child{font-size:'+px(72)+'}'+
+'#view-today .today-weather .weather-icon{width:'+px(80)+';height:'+px(80)+';margin-left:'+px(10)+'}'+
+'#view-today #today-desc{font-size:'+px(32)+'}'+
+'#view-today #today-range{font-size:'+px(22)+'}';
+}
+// Weather has its own bounded layout: header, two equal panels and a compact footer.
+// Font and icon sizes come from each panel, never from the generic page shrinker.
+function weatherMetrics(width,height,hasStatus){
+var w=Math.max(240,width-16),h=Math.max(300,height-16),title=Math.min(30,Math.max(22,w*.045)),place=Math.min(16,Math.max(13,w*.026));
+var heading=Math.ceil(title*1.1+place*1.1+9),footer=50,status=hasStatus?24:0,panel=Math.floor((h-heading-footer-status)/2);
+var gap=Math.min(8,Math.max(5,w*.014)),stats=Math.round(panel*.34),hero=panel-stats-6-gap;
+var col=w/3-12,day=Math.max(46,Math.round(panel*.21)),rain=Math.max(32,Math.round(panel*.12)),forecastRange=Math.max(30,Math.round(panel*.13)),description=Math.max(42,Math.round(panel*.16));
+var icon=Math.max(24,Math.min(col,panel-day-rain-forecastRange-description-12-2*gap));
+return {width:w,height:h,title:title,place:place,heading:heading,footer:footer,status:status,panel:panel,gap:gap,stats:stats,hero:hero,col:col,day:day,rain:rain,forecastRange:forecastRange,description:description,icon:icon};
+}
+function fitWeatherScreen(width,height){
+var m=weatherMetrics(width,height,!!el('status').innerHTML),style=el('layout-fit');
+function px(n){return Math.round(n*100)/100+'px'}
+var temperature=Math.min(m.hero*.67,m.width*.205),currentIcon=Math.min(m.hero*.62,m.width*.195),conditionFont=Math.min(m.hero*.24,m.width*.064),currentRangeFont=Math.min(m.hero*.16,m.width*.043),statLabel=Math.min(18,m.width*.028),statValue=Math.min(30,m.width*.049),statIcon=Math.min(48,m.stats-statValue*1.05-6);
+var dayFont=Math.min(32,m.day*.46),dateFont=Math.min(26,m.day*.38),rangeFont=Math.min(36,m.forecastRange*.9,m.col*.18),descriptionFont=Math.min(28,m.description/2.1),rainFont=Math.min(26,m.col/7.6);
+// Keep the ranges readable even with negative, two-digit temperatures.
+var items=el('forecast').getElementsByTagName?el('forecast').getElementsByTagName('div'):[];
+for(var i=0;i<items.length;i++)if(items[i].className==='forecast-range'){
+var text=String(items[i].textContent||items[i].innerText||'');if(text.length)rangeFont=Math.min(rangeFont,m.col/(text.length*.58));
+}
+var css='#page{padding:8px}#view-meteo{position:relative;height:'+px(m.height)+';width:100%;overflow:hidden}'+
+'#view-meteo #weather-heading{position:absolute;top:0;left:0;height:'+px(m.heading)+';width:100%}'+
+'#view-meteo h1{font-size:'+px(m.title)+';line-height:1.1}#view-meteo .place{font-size:'+px(m.place)+';line-height:1.1;margin-top:3px;letter-spacing:0}'+
+'#view-meteo .date{font-size:'+px(Math.min(18,m.title*.64))+';line-height:1.25}'+
+'#view-meteo #weather-primary{position:absolute;top:'+px(m.heading)+';left:0;height:'+px(m.panel)+';width:100%;padding:0}'+
+'#view-meteo .meteo-hero{position:absolute;top:0;left:0;width:100%;height:'+px(m.hero)+';padding:0;margin:0;border:0;border-top:2px solid #111}'+
+'#view-meteo .meteo-summary{position:absolute;top:0;left:0;height:'+px(m.hero)+';width:100%}'+
+'#view-meteo .meteo-now{width:55%;font-size:'+px(temperature)+';line-height:1.05;padding:0;text-align:left;letter-spacing:-4px;white-space:nowrap}'+
+'#view-meteo .meteo-now .weather-icon{width:'+px(currentIcon)+';height:'+px(currentIcon)+';margin-left:'+px(Math.max(7,m.width*.015))+';vertical-align:middle}'+
+'#view-meteo .meteo-details{width:45%;padding:0 0 0 '+px(Math.max(8,m.width*.018))+';text-align:left;vertical-align:middle}'+
+'#view-meteo .condition{font-size:'+px(conditionFont)+';line-height:1.05;padding:0;margin:0;text-align:left;font-weight:bold}'+
+'#view-meteo .hero-range{display:block;font-size:'+px(currentRangeFont)+';line-height:1.25;margin-top:'+px(Math.max(6,m.hero*.045))+';text-align:left;font-weight:normal;white-space:nowrap}'+
+'#view-meteo .stats{position:absolute;left:0;top:'+px(m.hero)+';width:100%;height:'+px(m.stats+6+m.gap)+';border-top:1px solid #111;border-bottom:6px solid #111}'+
+'#view-meteo .stats td{padding:0 2px '+px(m.gap)+';vertical-align:middle}#view-meteo .stat-icon{width:'+px(statIcon)+';height:'+px(statIcon)+';margin:0 auto 2px}'+
+'#view-meteo .stats .label{display:inline-block;font-size:'+px(statLabel)+';line-height:1.05;font-weight:bold;letter-spacing:0}'+
+'#view-meteo .stats .value{display:inline-block;font-size:'+px(statValue)+';line-height:1.05;margin:0 0 0 5px}#view-meteo .stats .unit{font-size:'+px(statValue*.7)+'}'+
+'#view-meteo #weather-secondary{position:absolute;top:'+px(m.heading+m.panel)+';left:0;width:100%;height:'+px(m.panel)+';padding:0}'+
+'#view-meteo .forecast{height:100%;margin:0}#view-meteo .forecast td{padding:0 5px;vertical-align:top}#view-meteo .forecast-day{position:relative;width:100%;height:'+px(m.panel)+';overflow:hidden}'+
+'#view-meteo .day{position:absolute;top:'+px(6+m.gap)+';left:0;width:100%;height:'+px(m.day)+';font-size:'+px(dayFont)+';line-height:1.05;font-weight:bold}'+
+'#view-meteo .day-date{display:block;font-size:'+px(dateFont)+';line-height:1.05;margin-top:2px}'+
+'#view-meteo .forecast-symbol{position:absolute;top:'+px(m.day+6+m.gap)+';left:50%;width:'+px(m.icon)+';height:'+px(m.icon)+';margin:0;margin-left:'+px(-m.icon/2)+'}'+
+'#view-meteo .forecast-range{position:absolute;top:'+px(m.day+m.icon+8+m.gap)+';left:0;width:100%;height:'+px(m.forecastRange)+';font-size:'+px(rangeFont)+';line-height:1.1;margin:0;white-space:nowrap}'+
+'#view-meteo .forecast-desc{position:absolute;top:'+px(m.day+m.icon+m.forecastRange+8+m.gap)+';left:0;width:100%;height:'+px(m.description)+';min-height:0;font-size:'+px(descriptionFont)+';line-height:1.05;font-weight:bold;margin:0;padding:0 2px;word-wrap:break-word}'+
+'#view-meteo .rain{position:absolute;bottom:'+px(m.gap)+';left:0;width:100%;height:'+px(m.rain)+';font-size:'+px(rainFont)+';font-weight:bold;line-height:1.1;white-space:nowrap;margin:0}#view-meteo .rain-icon{width:'+px(rainFont*1.1)+';height:'+px(rainFont*1.1)+';margin-right:3px}'+
+'#view-meteo #weather-footer{position:absolute;top:'+px(m.heading+2*m.panel)+';left:0;width:100%;height:'+px(m.footer)+';padding:6px 0;margin:0;border-top:1px solid #111}'+
+'#view-meteo .footer{height:100%}#view-meteo .note{font-size:13px;line-height:1.2}'+
+'#view-meteo #status{position:absolute;left:0;bottom:0;width:100%;font-size:14px;line-height:1.2;margin:0;max-height:24px;overflow:hidden}';
+if(style.styleSheet)style.styleSheet.cssText+=css;else style.textContent+=css;
+}
+function fitScreen(){
+if(typeof window==='undefined'||!document.documentElement)return;
+var page=el('page'),style=el('layout-fit'),height=window.innerHeight||document.documentElement.clientHeight,width=window.innerWidth||document.documentElement.clientWidth;
+if(!page||!style||!height||!width)return;
+height-=positionBottomControls(height)+6;
+if(baseLayout===null)baseLayout=el('layout-base').textContent||el('layout-base').innerHTML;
+function applyScale(scale){
+var css=baseLayout.replace('@media(max-width:400px)','@media(max-width:SCREENBREAK)').replace(/(-?\d*\.?\d+)px/g,function(match,n){return (Math.round(parseFloat(n)*scale*100)/100)+'px'}).replace('SCREENBREAK','400px');
+if(style.styleSheet)style.styleSheet.cssText=css;else style.textContent=css;
+}
+// Keep Today at its designed size: adding dates/tasks must not shrink the clock, date or weather.
+// Settings also retain readable text when a long form or the keyboard needs scrolling.
+page.style.paddingBottom='';
+if(activeView==='setup'){applyScale(1);return}
+if(activeView==='meteo'){applyScale(1);fitWeatherScreen(width,height);return}
+if(activeView==='today'){
+applyScale(1);
+var todayEvents=googleData&&googleData.events?googleData.events.filter(function(event){return event.endMs>utcNow()}):null;
+if(todayEvents)renderTodayDates(todayEvents);
+var todayCompact=false;
+if(!fits()){
+todayCompact=true;
+var compactCss='#view-today .today-date{margin-bottom:4px}#view-today .today-place{margin-top:5px;padding-top:5px}#view-today .today-weather td{padding-top:3px;padding-bottom:3px}#view-today .today-band td{padding-top:6px;padding-bottom:6px}#view-today .section-title{margin-top:5px;padding-top:4px;margin-bottom:3px}#view-today .route-row{padding-top:3px;padding-bottom:3px}#view-today .weather-alert{margin-top:4px;margin-bottom:4px}';
+if(style.styleSheet)style.styleSheet.cssText+=compactCss;else style.textContent+=compactCss;
+}
+var limit=todayOverviewLimit();
+if(limit>1&&fits()){
+var normalCss=style.styleSheet?style.styleSheet.cssText:style.textContent;
+function applyOverview(scale){var css=normalCss+todayOverviewCss(scale);if(style.styleSheet)style.styleSheet.cssText=css;else style.textContent=css}
+var todayLow=1,todayHigh=limit,todayBest=1;
+for(var trial=0;trial<9;trial++){var candidate=(todayLow+todayHigh)/2;applyOverview(candidate);if(fits()){todayBest=candidate;todayLow=candidate}else todayHigh=candidate}
+applyOverview(todayBest);
+}
+if(fits()){
+var weatherBaseCss=style.styleSheet?style.styleSheet.cssText:style.textContent;
+var weatherLow=typeof todayBest==='number'?todayBest:1,weatherHigh=Math.max(weatherLow,1.9),weatherBest=0;
+function applyWeather(css){if(style.styleSheet)style.styleSheet.cssText=weatherBaseCss+css;else style.textContent=weatherBaseCss+css}
+for(var weatherTrial=0;weatherTrial<9;weatherTrial++){
+var weatherCandidate=(weatherLow+weatherHigh)/2;applyWeather(todayWeatherCss(weatherCandidate,typeof todayBest==='number'?todayBest:1));
+if(fits()){weatherBest=weatherCandidate;weatherLow=weatherCandidate}else weatherHigh=weatherCandidate;
+}
+var weatherCss=weatherBest?todayWeatherCss(weatherBest,typeof todayBest==='number'?todayBest:1):'';applyWeather(weatherCss);
+var weatherSpace=height-10-page.getBoundingClientRect().bottom;
+if(weatherSpace>2){
+var weatherPadding=weatherBest?7*weatherBest:typeof todayBest==='number'&&todayBest>1?7*todayBest:todayCompact?3:7;
+var filledPadding=Math.round((weatherPadding+weatherSpace/2)*100)/100;
+applyWeather(weatherCss+'#view-today .today-weather td{padding-top:'+filledPadding+'px;padding-bottom:'+filledPadding+'px}');
+if(!fits())applyWeather(weatherCss);
+}
+}
+return;
+}
+function fits(){
+var box=page.getBoundingClientRect(),nodes=page.getElementsByTagName('*'),i,b,fixedControls=activeView==='agenda'?el('agenda-controls'):activeView==='tasks'?el('tasks-controls'):null;
+if(box.bottom>height-8)return false;
+for(i=0;i<nodes.length;i++){
+// Docked controls occupy the full viewport width and are measured separately.
+if(fixedControls&&fixedControls.contains(nodes[i]))continue;
+b=nodes[i].getBoundingClientRect();
+if(b.right>width-3||b.left<0)return false;
+if(b.bottom>height-8)return false;
+var tag=String(nodes[i].tagName||'').toLowerCase();
+if(tag!=='input'&&tag!=='textarea'&&nodes[i].clientWidth>0&&nodes[i].scrollWidth>nodes[i].clientWidth+2)return false;
+}
+return true;
+}
+var low=.65,high=2,best=.65,mid;
+for(var step=0;step<10;step++){mid=(low+high)/2;applyScale(mid);if(fits()){best=mid;low=mid}else high=mid}
+applyScale(best);
+// Distribute any space left when text width limits further enlargement.
+var remaining=height-8-page.getBoundingClientRect().bottom;
+if(remaining>12&&activeView==='menu'){
+var rowPadding=9*best+remaining/10;
+var menuCss='.menu-row{padding-top:'+rowPadding+'px;padding-bottom:'+rowPadding+'px}';
+if(style.styleSheet)style.styleSheet.cssText+=menuCss;else style.textContent+=menuCss;
+if(page.getBoundingClientRect().bottom>height-4)applyScale(best);
+}
+}
+function scheduleFit(){if(typeof window==='undefined')return;if(fitTimer)window.clearTimeout(fitTimer);fitTimer=window.setTimeout(fitScreen,120)}
+function renderWeather(d){
+var c=d.current,a=d.daily;
+el('temp').innerHTML=fmt(c.temperature_2m);el('desc').innerHTML=desc(c.weather_code);el('weather-icon').src='icons/'+iconName(c.weather_code)+'.svg';
+el('humidity').innerHTML=percent(c.relative_humidity_2m);
+el('wind').innerHTML=c.wind_speed_10m===null?'--':Math.round(c.wind_speed_10m)+' <span class="unit">km/h</span>';
+el('range-min').innerHTML=fmt(a.temperature_2m_min[0]);el('range-max').innerHTML=fmt(a.temperature_2m_max[0]);
+el('rain-today').innerHTML=percent(a.precipitation_probability_max[0]);
+var out='',week=['DOM','LUN','MAR','MER','GIO','VEN','SAB'];
+for(var i=1;i<4;i++){
+var day=a.time[i].split('-'),dayName=week[new Date(Date.UTC(+day[0],+day[1]-1,+day[2])).getUTCDay()];
+out+='<td><div class="forecast-day"><div class="day">'+dayName+' <span class="day-date">'+day[2]+'/'+day[1]+'</span></div><img class="forecast-symbol" src="icons/'+iconName(a.weather_code[i])+'.svg" alt=""><div class="forecast-range">'+fmt(a.temperature_2m_min[i])+' / '+fmt(a.temperature_2m_max[i])+'</div><div class="forecast-desc">'+desc(a.weather_code[i])+'</div><div class="rain"><img class="rain-icon" src="icons/stat-droplet.svg" alt="" aria-hidden="true">Pioggia '+percent(a.precipitation_probability_max[i])+'</div></div></td>';
+}
+el('forecast').innerHTML=out;
+var stamp=c.time.split('T'),date=stamp[0].split('-');
+el('date').innerHTML=date[2]+'/'+date[1]+'/'+date[0]+'<br>Dati ore '+stamp[1];
+el('status').innerHTML='';
+renderTodayWeather(d);
+fitScreen();
+}
+function loadWeather(){
+el('status').innerHTML='Aggiornamento in corso…';
+var x=new XMLHttpRequest();x.open('GET',url,true);
+x.onreadystatechange=function(){if(x.readyState===4){if(x.status>=200&&x.status<300){try{renderWeather(JSON.parse(x.responseText))}catch(e){el('status').innerHTML='Errore nella lettura dei dati. Riprova con AGGIORNA.'}}else{el('status').innerHTML='Dati non aggiornati: errore '+x.status+'. Riprova con AGGIORNA.'}}};
+x.onerror=function(){el('status').innerHTML='Connessione non riuscita. Controlla il Wi-Fi e riprova.'};
+try{x.send(null)}catch(e){el('status').innerHTML='Richiesta bloccata dal browser.'}
+}
+
+var clockSkew=0,googleStarted=0,lastClockText='',lastClockDate='',lastClockSync=0,screenCleanTimer=null,screenCleanPhase=0,lastScreenClean=0,screenCleanReady=false,viewChangesSinceClean=0;
+var activeView='today',googleData=null,settings={url:window.KINDLE_GOOGLE_URL||'',key:''},pendingNonce='',googleTimer=null,pages={agenda:0,tasks:0},extrasAfterGoogle=false,hourlyDataTimer=null,lastGeneralRefresh=0,navigationRefreshReady=false;
+function esc(s){return String(s||'').replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;').replace(/"/g,'&quot;').replace(/'/g,'&#39;')}
+function cleanEinkScreen(force){
+var cleaner=el('eink-cleaner'),now=Date.now();
+if(!cleaner||screenCleanPhase||(!force&&lastScreenClean&&now-lastScreenClean<20000))return;
+screenCleanPhase=1;cleaner.style.backgroundColor='#000';cleaner.style.display='block';cleaner.offsetHeight;
+screenCleanTimer=window.setTimeout(function(){cleaner.style.backgroundColor='#fff';cleaner.offsetHeight;screenCleanTimer=window.setTimeout(function(){cleaner.style.display='none';screenCleanPhase=0;lastScreenClean=Date.now();viewChangesSinceClean=0;updateClock();fitScreen()},500)},500);
+}
+function showView(name){
+var previousView=activeView,names=['today','meteo','menu','agenda','tasks','setup','detail','menu-detail','task-detail','info'];activeView=name;
+for(var i=0;i<names.length;i++){var panel=el('view-'+names[i]);panel.hidden=names[i]!==name;panel.style.display=names[i]===name?'block':'none';var btn=(names[i]==='detail'||names[i]==='menu-detail'||names[i]==='task-detail'||names[i]==='info')?null:el('nav-'+names[i]);if(btn){if(names[i]===name||(name==='detail'&&names[i]===detailReturn)||(name==='menu-detail'&&names[i]==='menu')||(name==='task-detail'&&names[i]===taskReturn)||(name==='info'&&names[i]==='today'))btn.setAttribute('aria-current','page');else btn.removeAttribute('aria-current')}}
+if(name==='menu')renderMenu();
+el('content-viewport').scrollTop=0;
+window.scrollTo(0,0);updateClock();fitScreen();if(screenCleanReady&&previousView!==name){if(previousView==='today'||name==='today')cleanEinkScreen(true);else{viewChangesSinceClean++;if(viewChangesSinceClean>=5)cleanEinkScreen(false)}}
+if(navigationRefreshReady&&previousView!==name)refreshGeneralIfStale();
+}
+function showToday(){if(activeView==='today'){if(screenCleanReady)cleanEinkScreen(true);refreshGeneral(false);return}showView('today')}
+function utcNow(){return Date.now()+clockSkew}
+function romeParts(epoch){
+var utc=new Date(epoch),year=utc.getUTCFullYear();
+var march=new Date(Date.UTC(year,2,31,1)),october=new Date(Date.UTC(year,9,31,1));
+var summerStart=march.getTime()-march.getUTCDay()*86400000,summerEnd=october.getTime()-october.getUTCDay()*86400000;
+var offset=(epoch>=summerStart&&epoch<summerEnd)?7200000:3600000;
+return new Date(epoch+offset);
+}
+function lowPowerNight(){var now=romeParts(utcNow()),minutes=now.getUTCHours()*60+now.getUTCMinutes();return minutes>=1410||minutes<390}
+function autoUpdate(callback){if(!lowPowerNight())callback()}
+function nextHalfHourDelay(){var now=romeParts(utcNow()),current=now.getUTCHours()*60+now.getUTCMinutes()+now.getUTCSeconds()/60+now.getUTCMilliseconds()/60000,first=390,interval=60,next;if(current<first)next=first;else next=first+(Math.floor((current-first)/interval)+1)*interval;if(next>=1440)next=first+1440;return Math.max(1000,Math.round((next-current)*60000))}
+function refreshAgendaAndExtras(includeMenu){extrasAfterGoogle=true;loadGoogle(includeMenu);if(!pendingNonce)extrasAfterGoogle=false}
+function refreshGeneral(includeMenu){lastGeneralRefresh=Date.now();loadWeather();refreshAgendaAndExtras(includeMenu===true)}
+function refreshGeneralIfStale(){if(!lastGeneralRefresh||Date.now()-lastGeneralRefresh>=900000)refreshGeneral(false)}
+function scheduleHourlyData(){if(hourlyDataTimer)window.clearTimeout(hourlyDataTimer);hourlyDataTimer=window.setTimeout(function(){if(!lowPowerNight())refreshGeneral(false);scheduleHourlyData()},nextHalfHourDelay())}
+function updateClock(){
+var now=romeParts(utcNow()),time=('0'+now.getUTCHours()).slice(-2)+':'+('0'+now.getUTCMinutes()).slice(-2);
+var weekdays=['Domenica','Lunedì','Martedì','Mercoledì','Giovedì','Venerdì','Sabato'],months=['gennaio','febbraio','marzo','aprile','maggio','giugno','luglio','agosto','settembre','ottobre','novembre','dicembre'];
+var dateText=weekdays[now.getUTCDay()]+' '+now.getUTCDate()+' '+months[now.getUTCMonth()];
+if(time!==lastClockText){el('clock').innerHTML=time;lastClockText=time;renderExtras()}
+if(dateText!==lastClockDate){el('today-date').innerHTML=dateText;lastClockDate=dateText}
+}
+function syncClock(){
+if(window.location.protocol!=='https:')return;
+var started=Date.now(),x=new XMLHttpRequest();lastClockSync=started;
+x.open('HEAD',(window.location.pathname||'/')+'?kindle-clock='+started,true);
+x.onreadystatechange=function(){if(x.readyState!==4)return;try{var stamp=x.getResponseHeader('Date'),server=Date.parse(stamp);if(!isNaN(server)&&x.status>=200&&x.status<400){clockSkew=server+(Date.now()-started)/2-Date.now();updateClock()}}catch(e){}};
+try{x.send(null)}catch(e){}
+}
+function renderTodayWeather(d){var c=d.current,a=d.daily;el('today-temp').innerHTML=fmt(c.temperature_2m);el('today-icon').src='icons/'+iconName(c.weather_code)+'.svg';el('today-desc').innerHTML=desc(c.weather_code);el('today-range').innerHTML='Min '+fmt(a.temperature_2m_min[0])+' · max '+fmt(a.temperature_2m_max[0]);el('today-wind').innerHTML=c.wind_speed_10m===null?'-- km/h':Math.round(c.wind_speed_10m)+' km/h';el('today-rain').innerHTML='Pioggia '+percent(a.precipitation_probability_max[0]);}
+var menuOffset=0,menuShown=[],menuDetailDate='';
+function menuDateMs(date){var p=String(date).split('-');return Date.UTC(+p[0],+p[1]-1,+p[2])}
+function menuIso(ms){return new Date(ms).toISOString().slice(0,10)}
+function menuToday(){var d=romeParts(utcNow());return menuIso(Date.UTC(d.getUTCFullYear(),d.getUTCMonth(),d.getUTCDate()))}
+function menuMonday(date){var ms=menuDateMs(date),day=new Date(ms).getUTCDay();return ms-((day+6)%7)*86400000}
+function menuWeekLabel(monday){
+var start=new Date(monday),finish=new Date(monday+4*86400000),months=['gennaio','febbraio','marzo','aprile','maggio','giugno','luglio','agosto','settembre','ottobre','novembre','dicembre'];
+if(start.getUTCFullYear()!==finish.getUTCFullYear())return start.getUTCDate()+' '+months[start.getUTCMonth()]+' '+start.getUTCFullYear()+' – '+finish.getUTCDate()+' '+months[finish.getUTCMonth()]+' '+finish.getUTCFullYear();
+if(start.getUTCMonth()!==finish.getUTCMonth())return start.getUTCDate()+' '+months[start.getUTCMonth()]+' – '+finish.getUTCDate()+' '+months[finish.getUTCMonth()]+' '+finish.getUTCFullYear();
+return start.getUTCDate()+'–'+finish.getUTCDate()+' '+months[finish.getUTCMonth()]+' '+finish.getUTCFullYear();
+}
+function menuCycle(menu,date){
+var monday=menuMonday(date),base=menuDateMs(menu.anchor),week=1,overrides=menu.overrides||[];
+// A confirmed Monday after a holiday can reset the cycle from that week onward.
+for(var i=0;i<overrides.length;i++){var item=overrides[i],stamp=menuDateMs(item.date);if(item.week&&stamp<=monday&&stamp>=base){base=stamp;week=item.week}}
+return (((Math.floor((monday-base)/604800000)+week-1)%4)+4)%4+1;
+}
+function menuForDate(menu,date){
+var result={date:date,courses:[],note:'',week:0},day=new Date(menuDateMs(date)).getUTCDay();
+if((menu.from&&date<menu.from)||(menu.until&&date>menu.until)){result.note='Fuori dal periodo del menù';return result}
+result.week=menuCycle(menu,date);
+var overrides=menu.overrides||[],override=null;
+for(var i=0;i<overrides.length;i++)if(overrides[i].date===date)override=overrides[i];
+if(override&&override.closed){result.note=override.note||'Scuola chiusa';return result}
+if(override&&override.courses.some(function(s){return !!s})){result.courses=override.courses;result.note=override.note||'Menù modificato';return result}
+if(day===0||day===6){result.note=override&&override.note||'Nessun menù scolastico';return result}
+for(var j=0;j<menu.recipes.length;j++)if(menu.recipes[j].week===result.week&&menu.recipes[j].day===day){result.courses=menu.recipes[j].courses;break}
+result.note=override&&override.note||'';
+if(!result.courses.length)result.note='Pranzo non disponibile';return result;
+}
+function renderMenu(){
+var menu=googleData&&googleData.menu,today=menuToday(),monday=menuMonday(today)+menuOffset*604800000;
+el('menu-week').innerHTML=esc(menuWeekLabel(monday));
+menuShown=[];el('menu-prev').disabled=false;el('menu-next').disabled=false;
+if(!menu||!menu.configured){
+el('menu-title').innerHTML=esc(menu&&menu.title||'Menù trimestrale');
+el('menu-list').innerHTML='<div class="empty">'+esc(menu?(menu.error||menu.message||'Menù da configurare.'):(googleData?'Aggiorna il codice Google per collegare il menù.':'Collega Google per leggere il menù della scuola.'))+'</div>';
+el('menu-note').innerHTML='';el('menu-prev').disabled=true;el('menu-next').disabled=true;
+if(activeView==='menu-detail'){el('menu-detail-courses').innerHTML='';el('menu-detail-note').innerHTML='Menù non disponibile. Torna al menù per le indicazioni.'}return;
+}
+el('menu-title').innerHTML=esc(menu.title)+' · Settimana '+menuCycle(menu,menuIso(monday))+' di 4';
+var weekdays=['DOM','LUN','MAR','MER','GIO','VEN','SAB'],out='<table class="menu-table" aria-label="Pranzi dal lunedì al venerdì"><tbody>';
+for(var i=0;i<5;i++){
+var date=menuIso(monday+i*86400000),meal=menuForDate(menu,date),isToday=date===today;menuShown.push(meal);
+out+='<tr'+(isToday?' class="menu-is-today"':'')+'><td class="menu-day">'+weekdays[new Date(menuDateMs(date)).getUTCDay()]+'<small>'+eventDateLabel(date,false)+'</small>'+(isToday?'<span class="menu-today-tag">OGGI</span>':'')+'</td><td>';
+if(meal.courses.length){out+='<button class="menu-row" type="button" onclick="openMenuDay('+i+')" aria-label="'+esc('Leggi il menù del '+eventDateLabel(date,true))+'">';for(var k=0;k<3;k++)if(meal.courses[k])out+='<span class="'+(k===0?'menu-first':k===2?'menu-side':'')+'">'+esc(meal.courses[k])+'</span>';out+='</button>'}
+else out+='<div class="menu-row"><span>'+esc(meal.note)+'</span></div>';
+out+='</td></tr>';
+}
+el('menu-list').innerHTML=out+'</tbody></table>';
+el('menu-note').innerHTML='Tocca un giorno per tutte le portate.';
+el('menu-prev').disabled=monday<=menuMonday(menu.from);el('menu-next').disabled=!!menu.until&&monday>=menuMonday(menu.until);
+if(menuDetailDate){for(var n=0;n<menuShown.length;n++)if(menuShown[n].date===menuDetailDate)renderMenuDetail(menuShown[n])}
+}
+function changeMenuWeek(step){var menu=googleData&&googleData.menu;if(!menu||!menu.configured)return;var base=menuMonday(menuToday()),next=base+(menuOffset+step)*604800000,min=menuMonday(menu.from),max=menu.until?menuMonday(menu.until):Infinity;if(next<min)next=min;if(next>max)next=max;menuOffset=Math.round((next-base)/604800000);renderMenu();fitScreen()}
+function currentMenuWeek(){menuOffset=0;renderMenu();fitScreen()}
+function openMenuDay(index){if(!menuShown[index]||!menuShown[index].courses.length)return;menuDetailDate=menuShown[index].date;renderMenuDetail(menuShown[index]);showView('menu-detail')}
+function renderMenuDetail(meal){
+el('menu-detail-title').innerHTML='Pranzo del '+eventDateLabel(meal.date,true);
+var labels=['Primo','Secondo','Contorno','Pane','Frutta / dessert'],out='';
+for(var i=0;i<5;i++)if(meal.courses[i])out+='<div class="menu-course"><small>'+labels[i]+'</small>'+esc(meal.courses[i])+'</div>';
+el('menu-detail-courses').innerHTML=out||esc(meal.note);el('menu-detail-note').innerHTML=esc(meal.courses.length?meal.note:'');
+}
+function eventDateLabel(date,includeYear){var parts=String(date||'').split('-');if(parts.length!==3)return '';return parts[2]+'/'+parts[1]+(includeYear?'/'+parts[0]:'')}
+function eventTimeLabel(event){
+var start=event.date||'',end=event.endDate||start,displayEnd=end;
+if(event.allDay&&event.endDate){
+// Google Calendar uses an exclusive end date for all-day events.
+var parts=end.split('-'),lastDay=new Date(Date.UTC(+parts[0],+parts[1]-1,+parts[2])-86400000);
+displayEnd=lastDay.toISOString().slice(0,10);if(displayEnd<start)displayEnd=start;
+}
+var showYear=!!start&&!!displayEnd&&start.slice(0,4)!==displayEnd.slice(0,4);
+var from=eventDateLabel(start,showYear)||event.dayLabel||'',to=eventDateLabel(displayEnd,showYear);
+if(event.allDay)return (displayEnd&&displayEnd!==start?from+' – '+to:from)+' · Tutto il giorno';
+if(start&&end&&start!==end)return from+' '+(event.time||'')+' → '+to+' '+(event.endTime||'');
+return from+' · '+(event.time||'')+'–'+(event.endTime||'');
+}
+var detailEvent=null,detailReturn='agenda',detailPage=0;
+function eventKey(event){return String(event.id||event.title||'')+'|'+event.startMs+'|'+event.endMs}
+function eventHtml(event,compact){
+var index=googleData?googleData.events.indexOf(event):-1,time='<span class="event-time">'+esc(eventTimeLabel(event))+'</span>',title='<span'+(compact?' class="compact-title"':'')+'>'+esc(event.title)+(compact?'<span class="event-arrow" aria-hidden="true">›</span>':'')+'</span>';
+return '<button type="button" class="event-row event-button" onclick="openEvent('+index+')"'+(index<0?' disabled':'')+'>'+(compact?title+time:time+title)+(!compact&&event.location?'<span class="event-location">'+esc(event.location)+'</span>':'')+'</button>';
+}
+function descriptionText(raw){
+var text=String(raw||'').replace(/<script\b[^>]*>[\s\S]*?<\/script\s*>/gi,'').replace(/<style\b[^>]*>[\s\S]*?<\/style\s*>/gi,'');
+text=text.replace(/<a\b[^>]*href\s*=\s*(["'])(.*?)\1[^>]*>([\s\S]*?)<\/a\s*>/gi,function(match,quote,url,label){return label+(url?' ('+url+')':'')});
+text=text.replace(/<br\s*\/?\s*>/gi,'\n').replace(/<\/(?:p|div|li|h[1-6])\s*>/gi,'\n').replace(/<li\b[^>]*>/gi,'• ').replace(/<!--[\s\S]*?-->/g,'').replace(/<\/?[a-z][^>]*>/gi,'');
+text=text.replace(/&(#x[0-9a-f]+|#[0-9]+|amp|lt|gt|quot|apos|nbsp);/gi,function(match,entity){var map={amp:'&',lt:'<',gt:'>',quot:'"',apos:"'",nbsp:' '},lower=entity.toLowerCase();if(map.hasOwnProperty(lower))return map[lower];var n=lower.indexOf('#x')===0?parseInt(lower.slice(2),16):parseInt(lower.slice(1),10);if(!isFinite(n)||n<1||n>1114111)return match;if(n<=65535)return String.fromCharCode(n);n-=65536;return String.fromCharCode(55296+(n>>10),56320+(n&1023))});
+return text.replace(/\r\n?/g,'\n').replace(/\n[ \t]+/g,'\n').replace(/\n{3,}/g,'\n\n').replace(/^\s+|\s+$/g,'');
+}
+function paginateDescription(text){var result=[];while(text.length>450){var cut=text.lastIndexOf('\n',450);if(cut<220)cut=text.lastIndexOf(' ',450);if(cut<220)cut=450;result.push(text.slice(0,cut));text=text.slice(cut).replace(/^\s+/,'')}result.push(text);return result}
+function openEvent(index){if(!googleData||index<0||index>=googleData.events.length)return;detailReturn=activeView==='today'?'today':'agenda';detailEvent=googleData.events[index];detailPage=0;renderEventDetail();showView('detail')}
+function renderEventDetail(){
+if(!detailEvent)return;
+el('detail-title').innerHTML=esc(detailEvent.title);
+el('detail-time').innerHTML=esc(eventTimeLabel(detailEvent));
+el('detail-location').innerHTML=detailEvent.location?'Luogo: '+esc(detailEvent.location):'';
+var text=typeof detailEvent.description==='undefined'?'Per leggere la descrizione, aggiorna il codice Google e il deployment.':descriptionText(detailEvent.description)||'Nessuna descrizione per questo evento.';
+var chunks=paginateDescription(text);detailPage=Math.max(0,Math.min(detailPage,chunks.length-1));
+el('detail-description').innerHTML=esc(chunks[detailPage]);
+el('detail-pager').style.display=chunks.length>1?'table':'none';
+el('detail-count').innerHTML=(detailPage+1)+' / '+chunks.length;
+el('detail-prev').disabled=detailPage===0;el('detail-next').disabled=detailPage>=chunks.length-1;
+el('detail-back').innerHTML=detailReturn==='today'?'TORNA A OGGI':'TORNA ALL’AGENDA';
+fitScreen();
+}
+function changeDetailPage(step){detailPage+=step;renderEventDetail()}
+function closeEventDetail(){showView(detailReturn)}
+var detailTask=null,taskReturn='tasks',taskDetailPage=0,taskPending=null,taskPollTimer=null;
+function taskKey(task){return task.id||String(task.title)+'|'+String(task.due||'')+'|'+String(task.parent||'')}
+function taskIndex(task){if(!googleData||!task)return -1;for(var i=0;i<googleData.tasks.length;i++)if(taskKey(googleData.tasks[i])===taskKey(task))return i;return -1}
+function taskHtml(task){
+var index=taskIndex(task),ready=!!(task.id&&googleData&&googleData.canCompleteTasks),pending=!!(taskPending&&taskPending.taskId===task.id);
+return '<div class="task-row"><table class="task-layout"><tr><td class="task-check-cell"><button type="button" class="task-check" onclick="completeTask('+index+')" aria-label="'+esc('Completa '+task.title)+'"'+(!ready||taskPending?' disabled':'')+'>'+ (pending?'…':'')+'</button></td><td><button type="button" class="task-open" onclick="openTask('+index+')"><span class="task-label">'+esc(task.title)+'</span>'+(task.due?'<span class="task-due">Data '+esc(eventDateLabel(task.due,false))+'</span>':'')+(task.notes?'<span class="task-has-notes">Dettagli disponibili ›</span>':'')+'</button></td></tr></table></div>';
+}
+function openTask(index){if(!googleData||index<0||index>=googleData.tasks.length)return;taskReturn=activeView==='today'?'today':'tasks';detailTask=googleData.tasks[index];taskDetailPage=0;renderTaskDetail();showView('task-detail')}
+function renderTaskDetail(){
+if(!detailTask)return;
+el('task-detail-title').innerHTML=esc(detailTask.title);el('task-detail-date').innerHTML=detailTask.due?'Data: '+esc(eventDateLabel(detailTask.due,true)):'';
+var notes=typeof detailTask.notes==='undefined'?'Per leggere i dettagli, aggiorna il codice Google e il deployment.':String(detailTask.notes||'').replace(/\r\n?/g,'\n')||'Nessun dettaglio per questa attività.';
+var chunks=paginateDescription(notes);taskDetailPage=Math.max(0,Math.min(taskDetailPage,chunks.length-1));
+el('task-detail-notes').innerHTML=esc(chunks[taskDetailPage]);el('task-detail-pager').style.display=chunks.length>1?'table':'none';el('task-detail-count').innerHTML=(taskDetailPage+1)+' / '+chunks.length;
+el('task-detail-prev').disabled=taskDetailPage===0;el('task-detail-next').disabled=taskDetailPage>=chunks.length-1;
+el('task-detail-back').innerHTML=taskReturn==='today'?'TORNA A OGGI':'TORNA A DA FARE';
+el('task-detail-complete').disabled=!!taskPending||taskIndex(detailTask)<0||!detailTask.id||!googleData.canCompleteTasks;
+el('task-detail-complete').innerHTML=taskPending&&taskPending.taskId===detailTask.id?'SALVATAGGIO…':'SEGNA COME COMPLETATA';
+}
+function changeTaskDetailPage(step){taskDetailPage+=step;renderTaskDetail();fitScreen()}
+function closeTaskDetail(){showView(taskReturn)}
+function completeDetailTask(){var index=taskIndex(detailTask);if(index>=0)completeTask(index)}
+function setTaskFeedback(message){var ids=['today-task-status','tasks-action-status','task-detail-status'];for(var i=0;i<ids.length;i++)el(ids[i]).innerHTML=esc(message||'')}
+function stopTaskOperation(message){if(taskPollTimer)window.clearTimeout(taskPollTimer);taskPollTimer=null;taskPending=null;setTaskFeedback(message);if(googleData)renderGoogle()}
+function completeTask(index){
+if(taskPending||!googleData||index<0||index>=googleData.tasks.length)return;
+var task=googleData.tasks[index];
+if(!task.id||!googleData.canCompleteTasks){setTaskFeedback('Aggiorna lo script Google per completare le attività dal Kindle.');return}
+if(!settings.key||!validGoogleUrl(settings.url)){setTaskFeedback('Collega Google nelle Impostazioni.');return}
+taskPending={id:'task-'+Date.now().toString(36)+'-'+Math.random().toString(36).slice(2),taskId:task.id,started:Date.now()};
+setTaskFeedback('Salvataggio su Google…');renderGoogle();
+el('write-task-key').value=settings.key;el('write-task-origin').value=window.location.protocol+'//'+window.location.host;el('write-task-id').value=task.id;el('write-task-operation').value=taskPending.id;
+var form=el('task-write-form');form.action=settings.url;form.method='post';
+try{form.submit()}catch(e){stopTaskOperation('Invio non riuscito. Riprova.');return}
+taskPollTimer=window.setTimeout(function(){loadGoogle(false)},1200);
+}
+function acceptTaskOperation(message){
+if(!taskPending||!message.operation||message.operation.id!==taskPending.id)return false;
+var operation=message.operation;
+if(operation.state==='pending'&&message.ok){el('google-status').innerHTML='Salvataggio attività…';taskPollTimer=window.setTimeout(function(){loadGoogle(false)},1500);return true}
+if(operation.state==='completed'){
+var taskId=taskPending.taskId;if(taskPollTimer)window.clearTimeout(taskPollTimer);taskPollTimer=null;taskPending=null;
+var data=message.data,valid=!!(data&&Array.isArray(data.events)&&Array.isArray(data.tasks));
+if(valid){var oldData=googleData;googleData=data;if(oldData){if(!googleData.routes)googleData.routes=oldData.routes;if(!googleData.alerts)googleData.alerts=oldData.alerts}el('google-status').innerHTML='Google aggiornato alle '+esc(data.time)}
+else if(googleData)googleData.tasks=googleData.tasks.filter(function(task){return task.id!==taskId});
+if(detailTask&&detailTask.id===taskId){detailTask=null;showView(taskReturn)}
+setTaskFeedback('Attività completata su Google.');if(googleData)renderGoogle();if(!valid)loadGoogle(false);return true;
+}
+stopTaskOperation(operation.error||message.error||'Esito non verificato. Aggiorna l’elenco prima di riprovare.');return true;
+}
+function renderList(kind,items,renderer){var size=5,total=items.length;pages[kind]=Math.min(pages[kind],Math.max(0,Math.ceil(total/size)-1));var from=pages[kind]*size,out='';for(var i=from;i<Math.min(from+size,total);i++)out+=renderer(items[i]);el(kind+'-list').innerHTML=out||'<div class="empty">'+(kind==='agenda'?'Nessun appuntamento nei prossimi giorni.':'Nessuna attività da completare.')+'</div>';el(kind+'-count').innerHTML=total?(from+1)+'–'+Math.min(from+size,total)+' di '+total:'0 elementi';el(kind+'-prev').disabled=from===0;el(kind+'-next').disabled=from+size>=total;}
+function renderGoogle(){if(!googleData)return;if(detailTask){var taskAt=taskIndex(detailTask);if(taskAt>=0)detailTask=googleData.tasks[taskAt];renderTaskDetail()}renderSetup();renderMenu();var now=utcNow(),events=googleData.events.filter(function(event){return event.endMs>now}),tasks=googleData.tasks;renderList('agenda',events,eventHtml);renderList('tasks',tasks,taskHtml);renderTodayDates(events);el('today-tasks').style.display=tasks.length?'block':'none';el('today-tasks').innerHTML=tasks.length?'<button class="task-notice" onclick="showView(&quot;tasks&quot;)">'+(tasks.length===1?'Hai 1 cosa da fare':'Hai '+tasks.length+' cose da fare')+' <span>›</span></button>':'';renderExtras();if(detailEvent){var matched=null;for(var j=0;j<googleData.events.length;j++){if(eventKey(googleData.events[j])===eventKey(detailEvent)){matched=googleData.events[j];break}}if(matched)detailEvent=matched;el('detail-update').innerHTML=matched?'':'Evento non presente nell’ultimo aggiornamento.';renderEventDetail()}fitScreen();}
+function changePage(kind,step){pages[kind]+=step;renderGoogle();}
+function renderSetup(){
+var sources=googleData&&googleData.sources;el('setup-google-source').innerHTML=sources&&sources.account?'Account di lettura: '+esc(sources.account)+' · Elenco '+esc(sources.taskList):'';
+var menu=googleData&&googleData.menu,text='In attesa del collegamento Google.';
+if(menu){text=menu.error||menu.message||'';if(menu.configured)text='Settimana 1 dal '+eventDateLabel(menu.anchor,true)+'. '+(menu.until?'Valido fino al '+eventDateLabel(menu.until,true)+'.':'Scadenza non indicata: resta attivo fino al nuovo menù.');}
+el('setup-menu-status').innerHTML=esc(text);
+}
+function migrateGoogleSettings(){
+var previous=window.KINDLE_PREVIOUS_GOOGLE_URLS||[];
+if(!window.KINDLE_GOOGLE_URL||previous.indexOf(settings.url)<0)return false;
+clearExtras();settings={url:window.KINDLE_GOOGLE_URL,key:''};
+try{window.localStorage.removeItem('kindle-google-settings')}catch(e){}
+el('setup-message').innerHTML='Collegamento aggiornato al nuovo account Google. Inserisci il nuovo codice personale e salva.';
+return true;
+}
+function showSettingsSection(name){
+var names=['google','menu','help'];if(names.indexOf(name)<0)return;
+for(var i=0;i<names.length;i++){var chosen=names[i]===name,panel=el('setup-panel-'+names[i]);panel.hidden=!chosen;panel.style.display=chosen?'block':'none';el('setup-tab-'+names[i]).setAttribute('aria-pressed',chosen?'true':'false')}
+el('content-viewport').scrollTop=0;window.scrollTo(0,0);fitScreen();
+}
+function openSetup(){migrateGoogleSettings();el('google-url').value=settings.url;el('google-key').value=settings.key;renderSetup();showView('setup');showSettingsSection('google');}
+function bookmarkSettings(){
+var hash=String(window.location.hash||'');if(hash.indexOf('#kindle=')!==0)return null;
+try{var fields=hash.slice(1).split('&'),values={};for(var i=0;i<fields.length;i++){var at=fields[i].indexOf('=');if(at>0)values[fields[i].slice(0,at)]=decodeURIComponent(fields[i].slice(at+1))}var url=values.google||window.KINDLE_GOOGLE_URL||settings.url;if(!/^[a-f0-9]{20}$/.test(values.kindle||'')||!validGoogleUrl(url))return null;return {url:url,key:values.kindle}}catch(e){return null}
+}
+function readSettings(){
+try{var saved=window.localStorage.getItem('kindle-google-settings');if(saved){saved=JSON.parse(saved);if(validGoogleUrl(saved.url||'')&&/^[a-f0-9]{20}$/.test(saved.key||''))settings={url:saved.url,key:saved.key}}}catch(e){}
+var bookmark=bookmarkSettings();if(bookmark){settings=bookmark;try{window.localStorage.setItem('kindle-google-settings',JSON.stringify(settings))}catch(e){}}
+}
+function prepareBookmark(){
+var fragment='kindle='+encodeURIComponent(settings.key);if(settings.url!==(window.KINDLE_GOOGLE_URL||''))fragment+='&google='+encodeURIComponent(settings.url);
+window.location.hash=fragment;el('bookmark-hint').style.display='block';window.scrollTo(0,0);
+}
+function dismissBookmarkHint(){el('bookmark-hint').style.display='none';fitScreen()}
+function restoreBookmark(){var bookmark=bookmarkSettings();if(!bookmark)return;if(bookmark.url===settings.url&&bookmark.key===settings.key)return;settings=bookmark;try{window.localStorage.setItem('kindle-google-settings',JSON.stringify(settings))}catch(e){}refreshAgendaAndExtras(false)}
+function validGoogleUrl(url){return /^https:\/\/script\.google\.com\/macros\/s\/[a-zA-Z0-9_-]+\/exec$/.test(url)}
+function settingsError(message){el('google-status').innerHTML=message;el('setup-message').innerHTML=message;window.scrollTo(0,0);fitScreen()}
+function saveSettings(){
+var url=el('google-url').value.replace(/^\s+|\s+$/g,''),key=el('google-key').value.replace(/\s/g,'').toLowerCase();
+// A newly typed code belongs to the chosen new account, even when the form has a cached old URL.
+if(!url||(window.KINDLE_PREVIOUS_GOOGLE_URLS||[]).indexOf(url)>=0)url=window.KINDLE_GOOGLE_URL||url;
+if(!validGoogleUrl(url)){settingsError('Inserisci l’URL Google che termina con /exec.');return}
+if(!/^[a-f0-9]{20}$/.test(key)){settingsError('Inserisci il codice di 20 caratteri generato da configuraKindle.');return}
+clearExtras();settings={url:url,key:key};el('google-url').value=url;el('google-key').value=key;
+try{window.localStorage.setItem('kindle-google-settings',JSON.stringify(settings));el('setup-message').innerHTML='Configurazione salvata. Collegamento in corso…';}
+catch(e){el('setup-message').innerHTML='Collegamento in corso. Questo browser richiede il segnalibro personale per ricordarlo.'}
+// Start the connection even if this browser cannot update the bookmark fragment.
+refreshAgendaAndExtras(false);
+if(el('remember-bookmark').checked){try{prepareBookmark()}catch(e){el('setup-message').innerHTML='Collegamento avviato. Questo browser non ha potuto preparare il segnalibro personale.'}}
+fitScreen();
+}
+function forgetSettings(){if(String(window.location.hash||'').indexOf('#kindle=')===0)window.location.hash='';el('bookmark-hint').style.display='none';pendingNonce='';if(googleTimer)window.clearTimeout(googleTimer);settings={url:window.KINDLE_GOOGLE_URL||'',key:''};clearExtras();googleData=null;infoKind='';el('info-title').innerHTML='';el('info-body').innerHTML='';detailTask=null;taskDetailPage=0;if(taskPollTimer)window.clearTimeout(taskPollTimer);taskPollTimer=null;taskPending=null;setTaskFeedback('');el('task-detail-title').innerHTML='';el('task-detail-date').innerHTML='';el('task-detail-notes').innerHTML='';el('write-task-key').value='';el('write-task-id').value='';el('write-task-operation').value='';renderSetup();menuDetailDate='';menuShown=[];menuOffset=0;renderMenu();el('menu-detail-courses').innerHTML='';el('menu-detail-title').innerHTML='';el('menu-detail-note').innerHTML='';detailEvent=null;detailPage=0;el('detail-title').innerHTML='';el('detail-time').innerHTML='';el('detail-location').innerHTML='';el('detail-description').innerHTML='';el('detail-update').innerHTML='';if(activeView==='detail'||activeView==='menu-detail'||activeView==='task-detail'||activeView==='info')showView('today');try{window.localStorage.removeItem('kindle-google-settings')}catch(e){}clearGoogleTransport();el('google-key').value='';el('google-status').innerHTML='Non collegato';el('setup-message').innerHTML='Collegamento rimosso. Elimina anche il segnalibro personale, se creato.';el('today-events-count').style.display='none';el('today-event').innerHTML='';el('today-dates').style.display='none';el('today-tasks').innerHTML='';el('today-tasks').style.display='none';renderExtras();el('agenda-list').innerHTML='Calendario da collegare.';el('tasks-list').innerHTML='Elenco da collegare.';fitScreen();}
+function clearGoogleTransport(){var node=el('google-request');if(node&&node.parentNode)node.parentNode.removeChild(node)}
+function loadGoogle(includeMenu){
+if(migrateGoogleSettings()){el('google-status').innerHTML='Nuovo collegamento pronto: inserisci il codice nelle Impostazioni';return}
+if(!settings.url||!settings.key){el('google-status').innerHTML='Non collegato';return}
+if(!validGoogleUrl(settings.url)){el('google-status').innerHTML='URL Google da correggere';return}
+if(taskPending&&Date.now()-taskPending.started>60000)stopTaskOperation('Esito non verificato. Controlla l’elenco aggiornato prima di riprovare.');
+if(taskPollTimer)window.clearTimeout(taskPollTimer);taskPollTimer=null;
+if(googleTimer)window.clearTimeout(googleTimer);clearGoogleTransport();
+pendingNonce=Date.now().toString(36)+'-'+Math.random().toString(36).slice(2);googleStarted=Date.now();
+var origin=window.location.protocol+'//'+window.location.host;
+el('google-status').innerHTML='Aggiornamento Google…';
+var request=document.createElement('script');request.id='google-request';request.async=true;
+request.setAttribute('referrerpolicy','no-referrer');
+request.src=settings.url+'?format=script&key='+encodeURIComponent(settings.key)+'&origin='+encodeURIComponent(origin)+'&nonce='+encodeURIComponent(pendingNonce)+'&menu=0';
+if(taskPending)request.src+='&action=task-status&opId='+encodeURIComponent(taskPending.id);
+request.onerror=function(){if(pendingNonce){pendingNonce='';extrasAfterGoogle=false;if(taskPending)stopTaskOperation('Esito non verificato. Aggiorna l’elenco prima di riprovare.');window.clearTimeout(googleTimer);el('google-status').innerHTML='Risposta Google bloccata: verifica il deployment.';el('setup-message').innerHTML='Aggiorna Code.gs e il deployment Google, poi riprova.';fitScreen()}};
+googleTimer=window.setTimeout(function(){pendingNonce='';extrasAfterGoogle=false;if(taskPending)stopTaskOperation('Esito non verificato. Aggiorna l’elenco prima di riprovare.');clearGoogleTransport();el('google-status').innerHTML='Google non risponde'+(googleData?' · dati precedenti visibili':'');el('setup-message').innerHTML='Verifica che il deployment usi il nuovo Code.gs e sia accessibile a Chiunque.';fitScreen();},45000);
+el('google-transport').appendChild(request);
+}
+function acceptGoogle(message){
+if(message&&message.type==='kindle-extras'){acceptExtras(message);return}
+if(!message||message.type!=='kindle-google'||!pendingNonce||message.nonce!==pendingNonce)return;
+window.clearTimeout(googleTimer);pendingNonce='';
+if(typeof message.serverTime==='number'){clockSkew=message.serverTime+(Date.now()-googleStarted)/2-Date.now();updateClock()}
+if(acceptTaskOperation(message))return;
+if(!message.ok){extrasAfterGoogle=false;if(taskPending)stopTaskOperation(message.error||'Salvataggio non verificato. Aggiorna l’elenco.');el('google-status').innerHTML=esc(message.error||'Collegamento non riuscito');el('setup-message').innerHTML=esc(message.error||'Collegamento non riuscito');fitScreen();return}
+if(!message.data||!Array.isArray(message.data.events)||!Array.isArray(message.data.tasks)){extrasAfterGoogle=false;el('google-status').innerHTML='Risposta Google non valida';return}
+var previousData=googleData;googleData=message.data;if(previousData){if(!googleData.routes)googleData.routes=previousData.routes;if(!googleData.alerts)googleData.alerts=previousData.alerts}el('google-status').innerHTML='Google aggiornato alle '+esc(googleData.time);el('setup-message').innerHTML='Collegamento Google attivo.';renderGoogle();if(extrasAfterGoogle){extrasAfterGoogle=false;loadExtras()}
+}
+function kindleGoogleReceive(message){acceptGoogle(message)}
+function receiveGoogle(event){if(!/^https:\/\/([a-z0-9-]+\.)*googleusercontent\.com$/.test(event.origin)&&event.origin!=='https://script.google.com')return;var message=event.data;if(typeof message==='string'){try{message=JSON.parse(message)}catch(e){return}}acceptGoogle(message)}
+var extrasNonce='',extrasTimer=null;
+function clearExtras(){extrasNonce='';if(extrasTimer)window.clearTimeout(extrasTimer);extrasTimer=null;var node=el('extras-request');if(node&&node.parentNode)node.parentNode.removeChild(node)}
+function extrasFailed(){clearExtras();var status=el('extras-status');if(status)status.innerHTML='Aggiornamento non riuscito.';if(!googleData)return;googleData.alerts={available:false,error:'Allerte non aggiornate. La fonte non risponde.'};renderExtras();scheduleFit()}
+function loadExtras(){
+if(!googleData||!settings.key||!validGoogleUrl(settings.url))return;
+var status=el('extras-status');if(status)status.innerHTML='Aggiornamento in corso…';
+clearExtras();extrasNonce='extras-'+Date.now().toString(36)+'-'+Math.random().toString(36).slice(2);
+var request=document.createElement('script');request.id='extras-request';request.async=true;request.setAttribute('referrerpolicy','no-referrer');request.src=settings.url+'?format=script&action=extras&key='+encodeURIComponent(settings.key)+'&origin='+encodeURIComponent(window.location.protocol+'//'+window.location.host)+'&nonce='+encodeURIComponent(extrasNonce);var thisNonce=extrasNonce;request.onerror=function(){if(extrasNonce===thisNonce)extrasFailed()};
+extrasTimer=window.setTimeout(extrasFailed,30000);el('google-transport').appendChild(request);
+}
+function acceptExtras(message){
+if(!extrasNonce||message.nonce!==extrasNonce||!googleData)return;
+if(!message.ok||!message.data){extrasFailed();return}
+clearExtras();googleData.routes=message.data.routes;googleData.alerts=message.data.alerts;var status=el('extras-status');if(status)status.innerHTML='Traffico e allerte aggiornati.';renderGoogle();
+}
+var infoKind='',infoRoute=0,infoPage=0,todayEventLimit=1;
+function shortLocal(epoch){var d=romeParts(epoch);return ('0'+d.getUTCDate()).slice(-2)+'/'+('0'+(d.getUTCMonth()+1)).slice(-2)+' '+('0'+d.getUTCHours()).slice(-2)+':'+('0'+d.getUTCMinutes()).slice(-2)}
+function riskLabel(text){if(/TEMPORALI/i.test(text))return 'Temporali';if(/VENTO/i.test(text))return 'Vento';if(/NEVE/i.test(text))return 'Neve';if(/GHIACCIO/i.test(text))return 'Ghiaccio';if(/IDROGEOLOGICO/i.test(text))return 'Rischio idrogeologico';if(/IDRAULICO/i.test(text))return 'Rischio idraulico';return String(text||'Avviso meteo')}
+function activeAlerts(){var a=googleData&&googleData.alerts;if(!a||!a.available||!a.checkedAt||utcNow()-a.checkedAt>1800000)return null;return (a.alerts||[]).filter(function(item){return item.endMs>utcNow()&&item.startMs<utcNow()+172800000})}
+function renderTodayDates(events){var limit=1;todayEventLimit=1;events=events.slice(0).sort(function(a,b){return (a.startMs||0)-(b.startMs||0)});var out='';for(var i=0;i<Math.min(limit,events.length);i++)out+=eventHtml(events[i],true);el('today-event').innerHTML=out;el('today-dates').style.display=events.length?'block':'none';el('today-events-count').innerHTML=Math.min(limit,events.length)+' di '+events.length+' ›';el('today-events-count').style.display=events.length>limit?'inline-block':'none'}
+function renderExtras(){
+var box=el('today-alert'),alerts=activeAlerts(),source=googleData&&googleData.alerts;
+box.style.display='none';box.className='weather-alert';
+if(source&&alerts===null){box.innerHTML='Allerte non aggiornate · Dettagli ›';box.className+=' alert-unavailable';box.style.display='block'}
+else if(alerts&&alerts.length){var a=alerts[0];box.innerHTML='<table><tr><td class="alert-symbol"><img src="icons/triangle-alert.svg" alt=""></td><td><b>CODICE '+esc(a.level)+'</b><span>'+esc(riskLabel(a.risk))+' · '+esc(shortLocal(a.startMs))+' → '+esc(shortLocal(a.endMs))+'</span></td><td class="alert-more">›</td></tr></table>';box.style.display='block'}
+var traffic=googleData&&googleData.routes,rows=traffic&&traffic.routes&&traffic.routes.length?traffic.routes:[{label:routeLabels[0]||'Destinazione 1'},{label:routeLabels[1]||'Destinazione 2'}],out='',fresh=!!(traffic&&traffic.checkedAt&&utcNow()-traffic.checkedAt<1200000);
+if(window.KINDLE_TRAFFIC_ENABLED===false){el('today-routes').innerHTML='';el('traffic-status').innerHTML=''}
+else{
+for(var i=0;i<Math.min(rows.length,2);i++){var r=rows[i],valid=!!(r.available&&fresh&&isFinite(r.seconds)&&r.seconds>0),status=valid?(r.trafficAvailable?(r.delaySeconds>0?'+'+Math.ceil(r.delaySeconds/60)+' min':'Regolare'):'Stima'):'Non disponibile';out+='<button class="route-row" onclick="openRoute('+i+')"><table><tr><td class="route-symbol"><img src="icons/car.svg?v=24" alt=""></td><td class="route-label">'+esc(r.label)+'</td><td class="route-time">'+(valid?Math.ceil(r.seconds/60)+' min':'--')+'<span class="route-extra">'+esc(status)+'</span></td><td class="route-more">›</td></tr></table></button>'}
+el('today-routes').innerHTML=out;
+el('traffic-status').innerHTML=traffic&&traffic.checkedAt?'Aggiornato '+esc(shortLocal(traffic.checkedAt)):'';
+}
+if(activeView==='info')renderInfo();
+}
+function openRoute(index){infoKind='route';infoRoute=index;infoPage=0;renderInfo();showView('info')}
+function openAlerts(){infoKind='alerts';infoPage=0;renderInfo();showView('info')}
+function renderInfo(){
+var title='',text='',official=false;
+if(infoKind==='route'){
+var source=googleData&&googleData.routes,r=source&&source.routes&&source.routes[infoRoute];title=r?r.label:(routeLabels[infoRoute]||('Destinazione '+(infoRoute+1)));
+if(r&&r.available){text='Partenza: '+r.origin+'\nArrivo: '+r.destination+'\n\nTempo '+(r.trafficAvailable?'con traffico':'stimato')+': '+Math.ceil(r.seconds/60)+' minuti.';
+if(r.trafficAvailable)text+='\nRitardo: '+Math.ceil(r.delaySeconds/60)+' minuti.';else text+='\nIl servizio non ha fornito dati sul traffico: questo è un tempo standard, non in tempo reale.';
+if(r.distanceMeters)text+='\nDistanza: '+(r.distanceMeters/1000).toFixed(1)+' km.';if(r.summary)text+='\nPercorso: '+r.summary;text+='\n\nFonte: Google Maps.\nAggiornamento: '+shortLocal(source.checkedAt);if(utcNow()-source.checkedAt>=1200000)text+='\nDATI NON AGGIORNATI.';
+}else text=(r&&r.error)||(source&&source.error)||'Aggiorna il codice Google ed esegui configuraKindle per attivare i due percorsi.';
+}else{
+var source=googleData&&googleData.alerts,alertZone=source&&source.zone?source.zone:'Zona configurata';title='AVVISI METEO · '+alertZone;official=true;var alerts=activeAlerts();
+if(alerts===null)text=(source&&source.error)||'Allerte non aggiornate. Consulta la fonte ufficiale.';
+else if(!alerts.length)text='Nessun avviso per la zona configurata nel bollettino letto.';
+else for(var i=0;i<alerts.length;i++)text+=(i?'\n\n':'')+'CODICE '+alerts[i].level+'\n'+alerts[i].risk+'\nDa '+shortLocal(alerts[i].startMs)+'\nA '+shortLocal(alerts[i].endMs);
+if(source&&source.issuedAt)text+='\n\nEmissione: '+shortLocal(source.issuedAt);if(source&&source.checkedAt)text+='\nLetto alle: '+shortLocal(source.checkedAt);
+text+='\n\nFonte: Centro Funzionale Regione Toscana. '+alertZone+'.';
+}
+var chunks=paginateDescription(text);infoPage=Math.max(0,Math.min(infoPage,chunks.length-1));el('info-title').innerHTML=esc(title);el('info-body').innerHTML=esc(chunks[infoPage]);el('info-pager').style.display=chunks.length>1?'table':'none';el('info-count').innerHTML=(infoPage+1)+' / '+chunks.length;el('info-prev').disabled=infoPage===0;el('info-next').disabled=infoPage>=chunks.length-1;el('info-source').style.display=official?'inline-block':'none';
+}
+function changeInfoPage(step){infoPage+=step;renderInfo();fitScreen()}
+
+function refreshAll(){refreshGeneral(false)}
+function fullRefresh(){cleanEinkScreen(true);window.setTimeout(function(){try{window.location.reload()}catch(e){refreshAll()}},1100)}
+window.addEventListener('message',receiveGoogle,false);window.addEventListener('hashchange',restoreBookmark,false);
+el('app-shell').addEventListener('touchmove',stopPagePan,false);
+readSettings();updateClock();showView('today');refreshGeneral(false);syncClock();scheduleHourlyData();screenCleanReady=true;navigationRefreshReady=true;window.addEventListener('resize',scheduleFit,false);window.addEventListener('orientationchange',scheduleFit,false);window.addEventListener('load',scheduleFit,false);
+window.setInterval(updateClock,60000);window.setInterval(function(){autoUpdate(syncClock)},21600000);window.setInterval(function(){autoUpdate(function(){cleanEinkScreen(false)})},10800000);
+</script>
+
+<script>(function(){var f=window.KINDLE_FEATURES||{};function hideNav(id){var n=document.getElementById(id);if(n&&n.parentNode)n.parentNode.style.display='none'}function apply(){if(!f.agenda){hideNav('nav-agenda');var d=document.getElementById('today-dates');if(d)d.style.display='none'}if(!f.tasks){hideNav('nav-tasks');var t=document.getElementById('today-tasks');if(t)t.style.display='none'}if(!f.menu)hideNav('nav-menu');if(!f.traffic){var r=document.getElementById('today-routes');if(r)r.style.display='none';var s=document.getElementById('traffic-status');if(s)s.style.display='none'}if(!f.alerts){var a=document.getElementById('today-alert');if(a)a.style.display='none'}}var oldRender=window.renderGoogle;if(oldRender)window.renderGoogle=function(){oldRender();apply()};var oldExtras=window.renderExtras;if(oldExtras)window.renderExtras=function(){oldExtras();apply()};var oldShow=window.showView;if(oldShow)window.showView=function(name){if((name==='agenda'&&!f.agenda)||(name==='tasks'&&!f.tasks)||(name==='menu'&&!f.menu))name='today';oldShow(name);apply()};apply()})();</script>
+</body></html>
